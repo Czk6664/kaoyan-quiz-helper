@@ -1735,12 +1735,12 @@ def generate_daily_article_with_ai():
 只返回JSON数据，不要有其他文字。"""
 
     headers = {
-        "Authorization": f"Bearer {KIMI_API_KEY}",
+        "Authorization": f"Bearer {MINIMAX_API_KEY}",
         "Content-Type": "application/json"
     }
     
     payload = {
-        "model": "moonshot-v1-8k",
+        "model": "abab6.5s-chat",
         "messages": [
             {"role": "user", "content": prompt}
         ],
@@ -1748,7 +1748,7 @@ def generate_daily_article_with_ai():
     }
     
     try:
-        response = requests.post(KIMI_API_URL, headers=headers, json=payload, timeout=60)
+        response = requests.post(MINIMAX_API_URL, headers=headers, json=payload, timeout=60)
         result = response.json()
         
         text = result.get('choices', [{}])[0].get('message', {}).get('content', '')
