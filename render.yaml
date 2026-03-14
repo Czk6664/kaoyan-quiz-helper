@@ -1,0 +1,20 @@
+# Render 部署配置
+# 将此文件放在项目根目录
+
+services:
+  - type: web
+    name: exam-backend
+    env: python
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && python app.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: MINIMAX_API_KEY
+        sync: false  # 需要在 Render Dashboard 中手动设置
+      - key: KIMI_API_KEY
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: PORT
+        value: 10000  # Render 默认端口

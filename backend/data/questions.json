@@ -1,0 +1,26 @@
+[
+  {
+    "id": "demo-q1",
+    "question": "Python??????????",
+    "options": {
+      "A": "append()",
+      "B": "insert()",
+      "C": "extend()",
+      "D": "add()"
+    },
+    "answer": "A",
+    "difficulty": 1
+  },
+  {
+    "id": "demo-q2",
+    "question": "Python??????????",
+    "options": {
+      "A": "int",
+      "B": "float",
+      "C": "char",
+      "D": "str"
+    },
+    "answer": "C",
+    "difficulty": 1
+  }
+]

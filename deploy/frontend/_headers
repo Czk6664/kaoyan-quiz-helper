@@ -1,0 +1,25 @@
+# Cloudflare Pages 配置
+# 将此文件放在部署目录的根目录
+
+# SPA 路由重定向 - 所有路径都重定向到 index.html
+# /* /index.html 200
+
+# 缓存策略
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+/*.js
+  Cache-Control: public, max-age=31536000, immutable
+/*.css
+  Cache-Control: public, max-age=31536000, immutable
+/*.png
+  Cache-Control: public, max-age=31536000, immutable
+/*.jpg
+  Cache-Control: public, max-age=31536000, immutable
+/*.svg
+  Cache-Control: public, max-age=31536000, immutable
+
+# CORS 头（如果需要跨域访问 API）
+# /api/*
+#   Access-Control-Allow-Origin: *
