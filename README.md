@@ -1,69 +1,150 @@
-# 考研刷题助手
+# 📚 考研刷题助手
 
-一个基于AI的刷题网站，支持选择题生成、错题本、收藏夹、艾宾浩斯遗忘曲线复习。
+<div align="center">
 
-## 项目结构
+[![GitHub stars](https://img.shields.io/github/stars/Czk6664/kaoyan-quiz-helper?style=flat)](https://github.com/Czk6664/kaoyan-quiz-helper/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/Czk6664/kaoyan-quiz-helper?style=flat)](https://github.com/Czk6664/kaoyan-quiz-helper/network)
+[![License](https://img.shields.io/github/license/Czk6664/kaoyan-quiz-helper?style=flat)](https://github.com/Czk6664/kaoyan-quiz-helper/blob/master/LICENSE)
 
-```
-刷题网站/
-├── backend/
-│   ├── app.py           # Flask后端
-│   └── requirements.txt  # Python依赖
-├── frontend/
-│   └── index.html       # 前端页面
-├── SPEC.md             # 项目规范
-└── README.md           # 使用说明
-```
+**基于 AI 的智能刷题系统 | 支持艾宾浩斯遗忘曲线 | 云端同步**
 
-## 功能
+[🌐 在线演示](#-) · [📖 文档](#-) · [🐛 问题反馈](https://github.com/Czk6664/kaoyan-quiz-helper/issues)
 
-- ✅ 上传文档，AI自动生成选择题
-- ✅ 难度打星（1-5星）
-- ✅ 每次刷题10道
-- ✅ 错题自动收录
-- ✅ 收藏功能
-- ✅ 艾宾浩斯遗忘曲线复习
+</div>
 
-## 启动方式
+---
 
-### 1. 安装后端依赖
+## ✨ 特性
+
+| 功能 | 描述 |
+|------|------|
+| 🤖 **AI 生成题目** | 上传文档/PDF，AI 自动生成选择题 |
+| 🧠 **艾宾浩斯记忆** | 科学复习计划，记得更牢 |
+| 📝 **错题本** | 智能记录，高频错题重点复习 |
+| ⭐ **收藏夹** | 收藏心仪题目，随时回顾 |
+| 👤 **用户系统** | 注册登录，学习数据云端同步 |
+| 📴 **离线模式** | 无网也能刷题，数据本地保存 |
+
+---
+
+## 🖼️ 预览
+
+<div align="center">
+<img src="https://picsum.photos/800/450" alt="预览图" style="border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+</div>
+
+---
+
+## 🚀 快速部署
+
+### 本地运行
 
 ```bash
+# 1. 克隆项目
+git clone https://github.com/Czk6664/kaoyan-quiz-helper.git
+cd kaoyan-quiz-helper
+
+# 2. 安装依赖
 cd backend
 pip install -r requirements.txt
-```
 
-### 2. 配置API密钥
+# 3. 配置 API Key（可选，默认使用内置 Demo Key）
+# 编辑 app.py 修改 MINIMAX_API_KEY
 
-打开 `backend/app.py`，修改第14行的API密钥：
-```python
-MINIMAX_API_KEY = "你的API密钥"
-```
-
-### 3. 启动后端
-
-```bash
+# 4. 启动后端
 python app.py
-```
+# 后端地址: http://localhost:5000
 
-后端会在 http://localhost:5000 运行
-
-### 4. 打开前端
-
-直接在浏览器中打开 `frontend/index.html`
-
-或者使用Python启动简单HTTP服务器：
-
-```bash
-# 在frontend目录下
+# 5. 启动前端
+# 直接用浏览器打开 frontend/index.html
+# 或使用 Python 内置服务器
+cd ../frontend
 python -m http.server 8080
+# 访问: http://localhost:8080
 ```
 
-然后访问 http://localhost:8080
+### 云端部署（推荐）
 
-## 使用流程
+| 平台 | 部署方式 |
+|------|----------|
+| 🟣 **Cloudflare Pages** | 前端静态文件 |
+| 🟠 **Render** | Python Flask 后端 |
 
-1. **上传文档**：点击"上传出题"，粘贴文档内容，设置题目数量
-2. **开始刷题**：点击"开始刷题"，每次10道题
-3. **复习**：点击"复习错题"，按艾宾浩斯遗忘曲线复习
-4. **收藏**：点击⭐收藏喜欢的题目
+详细部署教程见 [DEPLOY.md](./DEPLOY.md)
+
+---
+
+## 📁 项目结构
+
+```
+kaoyan-quiz-helper/
+├── backend/                  # Flask 后端
+│   ├── app.py               # 主程序
+│   ├── requirements.txt     # Python 依赖
+│   └── data/               # 数据存储（JSON）
+├── frontend/                # 前端页面
+│   └── index.html          # 单页应用
+├── cloudflare/             # Cloudflare Workers 配置
+├── deploy/                 # 部署配置
+├── render.yaml             # Render 一键部署
+├── DEPLOY.md               # 部署文档
+├── README.md               # 本文件
+└── SPEC.md                 # 项目规范
+```
+
+---
+
+## 🛠️ 技术栈
+
+<div align="center">
+
+| 层级 | 技术 |
+|------|------|
+| 前端 | HTML5 · CSS3 · Vanilla JS |
+| 后端 | Python Flask |
+| AI | MiniMax API · Kimi API |
+| 部署 | Cloudflare Pages · Render |
+
+</div>
+
+---
+
+## 📋 使用流程
+
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│  上传文档   │ -> │  AI 生成题  │ -> │  开始刷题   │
+└─────────────┘    └─────────────┘    └─────────────┘
+                                              │
+                                              v
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│  艾宾浩斯   │ <- │  错题复习   │ <- │  答题结果   │
+│  遗忘曲线   │    │  强化记忆   │    │  记录错题   │
+└─────────────┘    └─────────────┘    └─────────────┘
+```
+
+---
+
+## 🤝 贡献
+
+欢迎提交 Pull Request！
+
+1. Fork 本仓库
+2. 创建特性分支 (`git checkout -b feature/xxx`)
+3. 提交更改 (`git commit -m 'Add xxx'`)
+4. 推送分支 (`git push origin feature/xxx`)
+5. 打开 Pull Request
+
+---
+
+## 📄 许可证
+
+MIT License · © 2024 Czk6664
+
+---
+
+<div align="center">
+
+**⭐ Star 本项目，支持开发者继续更新 ⭐**
+
+</div>
