@@ -9,6 +9,8 @@
     <meta name="format-detection" content="telephone=no">
     <title>考研刷题助手</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Chart.js for statistics charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         :root {
             --primary: #6366f1;
@@ -1358,6 +1360,463 @@
             z-index: 999;
         }
 
+        /* ==================== 空状态卡片 ==================== */
+        .empty-state-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%);
+            border-radius: var(--radius-xl);
+            padding: 40px 24px;
+            margin-bottom: 24px;
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            animation: cardFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes cardFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .empty-state-card .icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            display: block;
+            animation: iconBounce 2s ease-in-out infinite;
+        }
+
+        @keyframes iconBounce {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.1) rotate(-5deg); }
+            75% { transform: scale(1.1) rotate(5deg); }
+        }
+
+        .empty-state-card h2 {
+            font-size: 24px;
+            color: #1f2937;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .empty-state-card p {
+            font-size: 15px;
+            color: #6b7280;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .empty-state-card .btn {
+            max-width: 200px;
+            margin: 0 auto;
+        }
+
+        /* ==================== 新手引导组件 ==================== */
+        .guide-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 5000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .guide-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 32px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .guide-card .guide-icon {
+            font-size: 56px;
+            text-align: center;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .guide-card h2 {
+            font-size: 22px;
+            color: #1f2937;
+            text-align: center;
+            margin-bottom: 24px;
+            font-weight: 700;
+        }
+
+        .guide-steps {
+            margin-bottom: 24px;
+        }
+
+        .guide-step {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: var(--radius-md);
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .guide-step:hover {
+            background: #f0f4ff;
+            transform: translateX(4px);
+        }
+
+        .guide-step:last-child {
+            margin-bottom: 0;
+        }
+
+        .guide-step-num {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            margin-right: 14px;
+            flex-shrink: 0;
+        }
+
+        .guide-step-content {
+            flex: 1;
+        }
+
+        .guide-step-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 2px;
+        }
+
+        .guide-step-desc {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .guide-step-icon {
+            font-size: 20px;
+            margin-left: 10px;
+        }
+
+        .guide-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .guide-actions .btn {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .guide-dismiss {
+            display: block;
+            text-align: center;
+            margin-top: 16px;
+            color: #9ca3af;
+            font-size: 13px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .guide-dismiss:hover {
+            color: #6b7280;
+        }
+
+        /* ==================== 增强统计卡片 ==================== */
+        .stats-card-enhanced {
+            background: var(--card-bg);
+            border-radius: var(--radius-xl);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-lg);
+            backdrop-filter: blur(10px);
+        }
+
+        .stats-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .stats-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .quick-action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 14px 8px;
+            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+            border: 1px solid #e5e7eb;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .quick-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+            background: white;
+            border-color: var(--primary-light);
+        }
+
+        .quick-action-btn .icon {
+            font-size: 24px;
+        }
+
+        .quick-action-btn .label {
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .review-today {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: var(--radius-md);
+            margin-bottom: 16px;
+        }
+
+        .review-today .label {
+            font-size: 14px;
+            color: #92400e;
+            font-weight: 500;
+        }
+
+        .review-today .count {
+            font-size: 20px;
+            font-weight: 700;
+            color: #b45309;
+        }
+
+        .progress-section {
+            margin-top: 16px;
+        }
+
+        .progress-section .label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .progress-section .percentage {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .progress-bar-enhanced {
+            height: 10px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar-enhanced .fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 50%, var(--success) 100%);
+            border-radius: 10px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .progress-bar-enhanced .fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        /* ==================== 导航优化 ==================== */
+        .nav-highlight {
+            background: rgba(99, 102, 241, 0.1) !important;
+            border-left: 3px solid var(--primary) !important;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .breadcrumb a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .breadcrumb a:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        .breadcrumb .separator {
+            color: #d1d5db;
+        }
+
+        .breadcrumb .current {
+            color: #1f2937;
+            font-weight: 500;
+        }
+
+        /* 移动端菜单 */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            padding: 12px;
+            background: var(--glass-bg);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            z-index: 1001;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-md);
+        }
+
+        @media (max-width: 640px) {
+            .mobile-menu-btn {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .mobile-menu-btn span {
+                width: 20px;
+                height: 2px;
+                background: #4b5563;
+                border-radius: 2px;
+                transition: all 0.3s ease;
+            }
+
+            .mobile-menu-btn.active span:nth-child(1) {
+                transform: rotate(45deg) translate(5px, 5px);
+            }
+
+            .mobile-menu-btn.active span:nth-child(2) {
+                opacity: 0;
+            }
+
+            .mobile-menu-btn.active span:nth-child(3) {
+                transform: rotate(-45deg) translate(5px, -5px);
+            }
+
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .empty-state-card {
+                padding: 30px 16px;
+            }
+
+            .empty-state-card .icon {
+                font-size: 48px;
+            }
+
+            .empty-state-card h2 {
+                font-size: 20px;
+            }
+
+            .guide-card {
+                padding: 24px 16px;
+            }
+
+            .guide-step {
+                padding: 12px;
+            }
+
+            .guide-step-num {
+                width: 28px;
+                height: 28px;
+                font-size: 12px;
+            }
+        }
+
+        /* 首页按钮组样式 */
+        .home-buttons {
+            display: grid;
+            gap: 12px;
+        }
+
+        .home-buttons .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        @media (min-width: 640px) {
+            .home-buttons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
         .particle {
             position: absolute;
             font-size: 24px;
@@ -2199,6 +2658,13 @@
     </style>
 </head>
 <body>
+    <!-- 移动端菜单按钮 -->
+    <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+    
     <button class="back-btn" id="backBtn" onclick="showHome()">← 返回</button>
     
     <!-- 连击显示 -->
@@ -2218,67 +2684,139 @@
     
     <div class="container">
         <div id="home-page" class="page active">
+            <!-- 面包屑导航 -->
+            <div class="breadcrumb" id="breadcrumb">
+                <span class="current">首页</span>
+            </div>
+            
             <h1 class="main-title">📚 考研刷题助手</h1>
             
-            <!-- 记忆状态指示 -->
-            <div class="memory-indicator">
-                <div class="memory-dot new" data-label="新题"></div>
-                <div class="memory-dot learning" data-label="学习中"></div>
-                <div class="memory-dot review" data-label="待复习"></div>
-                <div class="memory-dot mastered" data-label="已掌握"></div>
+            <!-- 空状态卡片 - 题库为空时显示 -->
+            <div id="empty-state-card" class="empty-state-card" style="display: none;">
+                <span class="icon">🎓</span>
+                <h2>欢迎使用考研刷题助手！</h2>
+                <p>开始之前，请先上传文档生成题目<br>AI智能分析，高效备考</p>
+                <button class="btn btn-primary" onclick="showGenerate()">
+                    <span>✨</span> 立即生成题目
+                </button>
             </div>
             
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <span class="stat-number" id="total-stat">0</span>
-                    <span class="stat-label">总题数</span>
+            <!-- 正常首页内容 - 题库有内容时显示 -->
+            <div id="home-content-normal">
+                <!-- 记忆状态指示 -->
+                <div class="memory-indicator">
+                    <div class="memory-dot new" data-label="新题"></div>
+                    <div class="memory-dot learning" data-label="学习中"></div>
+                    <div class="memory-dot review" data-label="待复习"></div>
+                    <div class="memory-dot mastered" data-label="已掌握"></div>
                 </div>
-                <div class="stat-card">
-                    <span class="stat-number" id="wrong-stat">0</span>
-                    <span class="stat-label">错题数</span>
+                
+                <!-- 增强统计卡片 -->
+                <div class="stats-card-enhanced" id="stats-card-enhanced">
+                    <div class="stats-header">
+                        <span class="stats-title">📊 学习概览</span>
+                    </div>
+                    
+                    <!-- 快速操作 -->
+                    <div class="quick-actions">
+                        <div class="quick-action-btn" onclick="showQuiz()">
+                            <span class="icon">🎯</span>
+                            <span class="label">开始刷题</span>
+                        </div>
+                        <div class="quick-action-btn" onclick="showReview()">
+                            <span class="icon">📖</span>
+                            <span class="label">复习</span>
+                        </div>
+                        <div class="quick-action-btn" onclick="showGenerate()">
+                            <span class="icon">📝</span>
+                            <span class="label">添加题目</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 今日待复习 -->
+                    <div class="review-today" id="review-today">
+                        <span class="label">今日待复习</span>
+                        <span class="count" id="review-today-count">0</span>
+                    </div>
+                    
+                    <!-- 学习进度条 -->
+                    <div class="progress-section">
+                        <div class="label">
+                            <span>学习进度</span>
+                            <span class="percentage" id="learning-percentage">0%</span>
+                        </div>
+                        <div class="progress-bar-enhanced">
+                            <div class="fill" id="learning-progress-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <span class="stat-number" id="fav-stat">0</span>
-                    <span class="stat-label">收藏数</span>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-number" id="total-stat">0</span>
+                        <span class="stat-label">总题数</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="wrong-stat">0</span>
+                        <span class="stat-label">错题数</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="fav-stat">0</span>
+                        <span class="stat-label">收藏数</span>
+                    </div>
+                    <div class="stat-card" style="position: relative;">
+                        <span class="streak-badge" id="streakBadge">🔥 0</span>
+                        <span class="stat-number" id="review-stat">0</span>
+                        <span class="stat-label">待复习</span>
+                    </div>
                 </div>
-                <div class="stat-card" style="position: relative;">
-                    <span class="streak-badge" id="streakBadge">🔥 0</span>
-                    <span class="stat-number" id="review-stat">0</span>
-                    <span class="stat-label">待复习</span>
+                
+                <!-- 学习里程碑 -->
+                <div class="milestone-bar" id="milestoneBar">
+                    <span class="milestone-icon">🎯</span>
+                    <span class="milestone-text" id="milestoneText">今日目标：完成10题</span>
+                    <span class="milestone-progress" id="milestoneProgress">0/10</span>
+                </div>
+                
+                <!-- 快捷操作按钮组 -->
+                <div class="home-buttons">
+                    <button class="btn btn-primary" onclick="showQuiz()">
+                        <span>🎯</span> 开始刷题
+                    </button>
+                    <button class="btn btn-success" onclick="showReview()">
+                        <span>📖</span> 复习错题
+                    </button>
+                    <button class="btn btn-warning" onclick="showFavorites()">
+                        <span>⭐</span> 我的收藏
+                    </button>
+                    <button class="btn btn-secondary" onclick="showWrong()">
+                        <span>📝</span> 错题本
+                    </button>
+                    <button class="btn btn-secondary" onclick="showGenerate()">
+                        <span>📤</span> 上传出题
+                    </button>
+                    <button class="btn btn-primary" onclick="loadDailyEnglish()" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);">
+                        <span>📖</span> 每日英语
+                    </button>
+                    <button class="btn btn-secondary" onclick="loadVocabulary()">
+                        <span>📚</span> 单词本
+                    </button>
+                    <button class="btn btn-secondary" onclick="showStatsChart()">
+                        <span>📊</span> 学习统计
+                    </button>
+                    <button class="btn btn-secondary" onclick="showReport()">
+                        <span>📋</span> 学习报告
+                    </button>
                 </div>
             </div>
-            
-            <!-- 学习里程碑 -->
-            <div class="milestone-bar" id="milestoneBar">
-                <span class="milestone-icon">🎯</span>
-                <span class="milestone-text" id="milestoneText">今日目标：完成10题</span>
-                <span class="milestone-progress" id="milestoneProgress">0/10</span>
-            </div>
-            
-            <button class="btn btn-primary" onclick="showQuiz()">
-                <span>🎯</span> 开始刷题
-            </button>
-            <button class="btn btn-success" onclick="showReview()">
-                <span>📖</span> 复习错题
-            </button>
-            <button class="btn btn-warning" onclick="showFavorites()">
-                <span>⭐</span> 我的收藏
-            </button>
-            <button class="btn btn-secondary" onclick="showWrong()">
-                <span>📝</span> 错题本
-            </button>
-            <button class="btn btn-secondary" onclick="showGenerate()">
-                <span>📤</span> 上传出题
-            </button>
-            <button class="btn btn-primary" onclick="loadDailyEnglish()" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);">
-                <span>📖</span> 每日英语
-            </button>
-            <button class="btn btn-secondary" onclick="loadVocabulary()">
-                <span>📚</span> 单词本
-            </button>
         </div>
         
         <div id="generate-page" class="page">
+            <div class="breadcrumb">
+                <a href="javascript:void(0)" onclick="showHome()">首页</a>
+                <span class="separator">›</span>
+                <span class="current">上传出题</span>
+            </div>
             <div class="card">
                 <h2 class="list-title" style="color: #1f2937;">📝 上传出题</h2>
                 <p style="color: #6b7280; margin-bottom: 20px; font-size: 15px;">上传文档内容，AI自动生成选择题</p>
@@ -2333,16 +2871,37 @@
         </div>
         
         <div id="quiz-page" class="page">
+            <div class="breadcrumb">
+                <a href="javascript:void(0)" onclick="showHome()">首页</a>
+                <span class="separator">›</span>
+                <span class="current">刷题</span>
+            </div>
             <div class="progress-bar">
                 <div class="progress-text" id="quiz-progress"></div>
                 <div class="progress-track">
                     <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
                 </div>
             </div>
+            <!-- 分类筛选器 -->
+            <div class="category-filter" id="category-filter" style="margin-bottom: 16px;">
+                <div class="filter-row" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <select id="category-select" class="filter-select" onchange="onCategoryChange()" style="flex: 1; padding: 10px; border-radius: 10px; border: 2px solid #e5e7eb; font-size: 14px;">
+                        <option value="">📚 所有分类</option>
+                    </select>
+                    <select id="chapter-select" class="filter-select" onchange="loadQuiz()" style="flex: 1; padding: 10px; border-radius: 10px; border: 2px solid #e5e7eb; font-size: 14px;">
+                        <option value="">📖 所有章节</option>
+                    </select>
+                </div>
+            </div>
             <div id="quiz-questions"></div>
         </div>
         
         <div id="wrong-page" class="page">
+            <div class="breadcrumb">
+                <a href="javascript:void(0)" onclick="showHome()">首页</a>
+                <span class="separator">›</span>
+                <span class="current">错题本</span>
+            </div>
             <h2 class="list-title">📖 错题本</h2>
             <div class="filter-bar">
                 <button class="filter-btn active" onclick="filterWrong('all')">全部</button>
@@ -2353,33 +2912,150 @@
         </div>
         
         <div id="favorites-page" class="page">
+            <div class="breadcrumb">
+                <a href="javascript:void(0)" onclick="showHome()">首页</a>
+                <span class="separator">›</span>
+                <span class="current">收藏夹</span>
+            </div>
             <h2 class="list-title">⭐ 收藏夹</h2>
             <div id="favorites-list"></div>
         </div>
         
         <div id="review-page" class="page">
+            <div class="breadcrumb">
+                <a href="javascript:void(0)" onclick="showHome()">首页</a>
+                <span class="separator">›</span>
+                <span class="current">复习</span>
+            </div>
             <h2 class="list-title">🔄 复习</h2>
             <div id="review-list"></div>
         </div>
         
         <!-- 每日英语阅读页面 -->
         <div id="english-page" class="page">
+            <div class="breadcrumb">
+                <a href="javascript:void(0)" onclick="showHome()">首页</a>
+                <span class="separator">›</span>
+                <span class="current">每日英语</span>
+            </div>
             <div id="english-content"></div>
         </div>
         
         <!-- 英语答题结果页面 -->
         <div id="english-result-page" class="page">
+            <div class="breadcrumb">
+                <a href="javascript:void(0)" onclick="showHome()">首页</a>
+                <span class="separator">›</span>
+                <a href="javascript:void(0)" onclick="loadDailyEnglish()">每日英语</a>
+                <span class="separator">›</span>
+                <span class="current">答题结果</span>
+            </div>
             <div id="english-result-content"></div>
         </div>
         
         <!-- 单词本页面 -->
         <div id="vocabulary-page" class="page">
+            <div class="breadcrumb">
+                <a href="javascript:void(0)" onclick="showHome()">首页</a>
+                <span class="separator">›</span>
+                <span class="current">单词本</span>
+            </div>
             <h2 class="list-title">📚 单词本</h2>
             <div class="vocab-filter">
                 <button class="vocab-filter-btn active" onclick="sortVocabulary('time')">按时间</button>
                 <button class="vocab-filter-btn" onclick="sortVocabulary('alpha')">按字母</button>
             </div>
             <div id="vocabulary-list"></div>
+        </div>
+        
+        <!-- 学习统计图表页面 -->
+        <div id="stats-chart-page" class="page">
+            <h2 class="list-title">📊 学习统计</h2>
+            <div class="chart-controls" style="display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;">
+                <button class="filter-btn active" onclick="showChartPeriod(7)">最近7天</button>
+                <button class="filter-btn" onclick="showChartPeriod(30)">最近30天</button>
+            </div>
+            
+            <!-- 每日学习量柱状图 -->
+            <div class="card" style="margin-bottom: 20px;">
+                <h3 style="margin-bottom: 16px; font-size: 16px; color: #1f2937;">📈 每日学习量</h3>
+                <canvas id="dailyChart" height="200"></canvas>
+            </div>
+            
+            <!-- 正确率折线图 -->
+            <div class="card" style="margin-bottom: 20px;">
+                <h3 style="margin-bottom: 16px; font-size: 16px; color: #1f2937;">📉 正确率趋势</h3>
+                <canvas id="accuracyChart" height="200"></canvas>
+            </div>
+            
+            <!-- 分类饼图 -->
+            <div class="card" style="margin-bottom: 20px;">
+                <h3 style="margin-bottom: 16px; font-size: 16px; color: #1f2937;">🥧 分类掌握情况</h3>
+                <canvas id="categoryChart" height="200"></canvas>
+            </div>
+        </div>
+        
+        <!-- 学习报告页面 -->
+        <div id="report-page" class="page">
+            <h2 class="list-title">📋 学习报告</h2>
+            
+            <!-- 周期切换 -->
+            <div class="report-tabs" style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button class="filter-btn active" id="report-week-btn" onclick="showReport('week')">本周</button>
+                <button class="filter-btn" id="report-month-btn" onclick="showReport('month')">本月</button>
+            </div>
+            
+            <!-- 概览卡片 -->
+            <div class="stats-grid" style="margin-bottom: 20px;">
+                <div class="stat-card">
+                    <span class="stat-number" id="report-total">0</span>
+                    <span class="stat-label">答题总数</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="report-correct">0</span>
+                    <span class="stat-label">正确数</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="report-accuracy">0%</span>
+                    <span class="stat-label">正确率</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="report-weak">0</span>
+                    <span class="stat-label">薄弱点</span>
+                </div>
+            </div>
+            
+            <!-- 掌握程度分析 -->
+            <div class="card" style="margin-bottom: 20px;">
+                <h3 style="margin-bottom: 16px; font-size: 16px; color: #1f2937;">🎯 知识点掌握情况</h3>
+                <div class="mastery-legend" style="display: flex; justify-content: space-around; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; color: #8b5cf6;">🆕</div>
+                        <div style="font-size: 12px; color: #6b7280;">新题 <span id="mastery-new">0</span></div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; color: #f59e0b;">📚</div>
+                        <div style="font-size: 12px; color: #6b7280;">学习中 <span id="mastery-learning">0</span></div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; color: #3b82f6;">🔄</div>
+                        <div style="font-size: 12px; color: #6b7280;">待复习 <span id="mastery-review">0</span></div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; color: #10b981;">✅</div>
+                        <div style="font-size: 12px; color: #6b7280;">已掌握 <span id="mastery-mastered">0</span></div>
+                    </div>
+                </div>
+                <canvas id="masteryChart" height="150"></canvas>
+            </div>
+            
+            <!-- 薄弱知识点 -->
+            <div class="card" style="margin-bottom: 20px;">
+                <h3 style="margin-bottom: 16px; font-size: 16px; color: #1f2937;">⚠️ 薄弱知识点分析</h3>
+                <div id="weak-points-list">
+                    <p style="color: #6b7280; text-align: center; padding: 20px;">暂无薄弱知识点</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -2469,6 +3145,54 @@
 
     <div class="toast" id="toast"></div>
 
+    <!-- 新手引导组件 -->
+    <div class="guide-overlay hidden" id="guideOverlay">
+        <div class="guide-card">
+            <span class="guide-icon">🎓</span>
+            <h2>欢迎使用考研刷题助手</h2>
+            
+            <div class="guide-steps">
+                <div class="guide-step">
+                    <div class="guide-step-num">1</div>
+                    <div class="guide-step-content">
+                        <div class="guide-step-title">上传文档生成题目</div>
+                        <div class="guide-step-desc">支持文本或PDF上传</div>
+                    </div>
+                    <span class="guide-step-icon">📄</span>
+                </div>
+                
+                <div class="guide-step">
+                    <div class="guide-step-num">2</div>
+                    <div class="guide-step-content">
+                        <div class="guide-step-title">开始刷题</div>
+                        <div class="guide-step-desc">AI智能出题，巩固知识点</div>
+                    </div>
+                    <span class="guide-step-icon">🎯</span>
+                </div>
+                
+                <div class="guide-step">
+                    <div class="guide-step-num">3</div>
+                    <div class="guide-step-content">
+                        <div class="guide-step-title">复习错题</div>
+                        <div class="guide-step-desc">针对薄弱环节加强练习</div>
+                    </div>
+                    <span class="guide-step-icon">📖</span>
+                </div>
+            </div>
+            
+            <div class="guide-actions">
+                <button class="btn btn-primary" onclick="startLearning()">
+                    <span>🚀</span> 开始学习
+                </button>
+                <button class="btn btn-secondary" onclick="closeGuide()">
+                    <span>👀</span> 随便看看
+                </button>
+            </div>
+            
+            <span class="guide-dismiss" onclick="dismissGuide()">不再提示</span>
+        </div>
+    </div>
+
     <!-- 单词释义卡片 -->
     <div class="word-popup-overlay hidden" id="wordPopupOverlay" onclick="closeWordPopup()"></div>
     <div class="word-popup hidden" id="wordPopup">
@@ -2548,8 +3272,66 @@
                 startAutoSync();
             }
             
+            // 检查空状态
+            checkEmptyState();
+            
+            // 检查是否显示新手引导
+            checkAndShowGuide();
+            
             // 更新统计
             updateStats();
+        }
+        
+        // 检查空状态
+        function checkEmptyState() {
+            const localQuestions = loadDataFromLocal(STORAGE_KEYS.QUESTIONS, []);
+            const emptyCard = document.getElementById('empty-state-card');
+            const normalContent = document.getElementById('home-content-normal');
+            
+            if (localQuestions.length === 0) {
+                emptyCard.style.display = 'block';
+                normalContent.style.display = 'none';
+            } else {
+                emptyCard.style.display = 'none';
+                normalContent.style.display = 'block';
+            }
+        }
+        
+        // 检查并显示新手引导
+        function checkAndShowGuide() {
+            const guideShown = localStorage.getItem('guide_shown');
+            const localQuestions = loadDataFromLocal(STORAGE_KEYS.QUESTIONS, []);
+            
+            // 如果没有显示过引导，且题库为空，显示引导
+            if (!guideShown && localQuestions.length === 0) {
+                showGuide();
+            }
+        }
+        
+        // 显示新手引导
+        function showGuide() {
+            const overlay = document.getElementById('guideOverlay');
+            overlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // 防止背景滚动
+        }
+        
+        // 关闭新手引导
+        function closeGuide() {
+            const overlay = document.getElementById('guideOverlay');
+            overlay.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+        
+        // 开始学习
+        function startLearning() {
+            closeGuide();
+            showGenerate();
+        }
+        
+        // 不再显示引导
+        function dismissGuide() {
+            localStorage.setItem('guide_shown', 'true');
+            closeGuide();
         }
         
         // 加载本地数据
@@ -3212,11 +3994,47 @@
             animateNumber(document.getElementById('fav-stat'), stats.favorites || 0);
             animateNumber(document.getElementById('review-stat'), reviewData.length || 0);
             
+            // 更新今日待复习数量
+            const reviewTodayCount = document.getElementById('review-today-count');
+            if (reviewTodayCount) {
+                reviewTodayCount.textContent = reviewData.length || 0;
+            }
+            
+            // 更新学习进度条
+            updateLearningProgress(stats);
+            
             // 更新连胜
             updateStreak(stats.streak || 0);
             
             // 更新今日进度
             updateMilestone(stats.todayCompleted || 0);
+            
+            // 检查空状态
+            checkEmptyState();
+        }
+        
+        // 更新学习进度条
+        function updateLearningProgress(stats) {
+            const total = stats.total || 0;
+            const wrong = stats.wrong || 0;
+            const todayCompleted = stats.todayCompleted || 0;
+            
+            // 计算学习进度：基于已做题目和错题率
+            let progress = 0;
+            if (total > 0) {
+                // 进度 = 已做题目 / 总题目 * 100，最高100%
+                progress = Math.min(Math.round((todayCompleted / Math.max(total, 10)) * 100), 100);
+            }
+            
+            const percentageEl = document.getElementById('learning-percentage');
+            const fillEl = document.getElementById('learning-progress-fill');
+            
+            if (percentageEl) {
+                percentageEl.textContent = progress + '%';
+            }
+            if (fillEl) {
+                fillEl.style.width = progress + '%';
+            }
         }
 
         function updateStreak(streak) {
@@ -3257,6 +4075,126 @@
                 backBtn.classList.remove('visible');
             } else {
                 backBtn.classList.add('visible');
+            }
+            
+            // 更新面包屑导航
+            updateBreadcrumb(pageId);
+            
+            // 高亮当前页面按钮
+            highlightCurrentPage(pageId);
+        }
+        
+        // 更新面包屑导航
+        function updateBreadcrumb(pageId) {
+            const breadcrumb = document.getElementById('breadcrumb');
+            if (!breadcrumb) return;
+            
+            const pageNames = {
+                'home-page': '首页',
+                'generate-page': '上传出题',
+                'quiz-page': '刷题',
+                'wrong-page': '错题本',
+                'favorites-page': '收藏夹',
+                'review-page': '复习',
+                'english-page': '每日英语',
+                'english-result-page': '答题结果',
+                'vocabulary-page': '单词本'
+            };
+            
+            const pageName = pageNames[pageId] || '未知页面';
+            
+            if (pageId === 'home-page') {
+                breadcrumb.innerHTML = '<span class="current">首页</span>';
+            } else {
+                breadcrumb.innerHTML = `
+                    <a href="javascript:void(0)" onclick="showHome()">首页</a>
+                    <span class="separator">›</span>
+                    <span class="current">${pageName}</span>
+                `;
+            }
+        }
+        
+        // 高亮当前页面按钮
+        function highlightCurrentPage(pageId) {
+            // 移除所有高亮
+            document.querySelectorAll('.quick-action-btn, .home-buttons .btn').forEach(btn => {
+                btn.classList.remove('nav-highlight');
+            });
+            
+            // 根据页面添加高亮
+            const pageToButton = {
+                'quiz-page': '.quick-action-btn:first-child',
+                'review-page': '.quick-action-btn:nth-child(2)',
+                'generate-page': '.quick-action-btn:nth-child(3)'
+            };
+            
+            const selector = pageToButton[pageId];
+            if (selector) {
+                const btn = document.querySelector(selector);
+                if (btn) {
+                    btn.classList.add('nav-highlight');
+                }
+            }
+        }
+        
+        // 移动端菜单切换
+        function toggleMobileMenu() {
+            const menuBtn = document.getElementById('mobileMenuBtn');
+            menuBtn.classList.toggle('active');
+            
+            // 创建一个简单的移动端导航菜单
+            let mobileNav = document.getElementById('mobileNav');
+            
+            if (!mobileNav) {
+                mobileNav = document.createElement('div');
+                mobileNav.id = 'mobileNav';
+                mobileNav.style.cssText = `
+                    position: fixed;
+                    top: 60px;
+                    right: 16px;
+                    background: white;
+                    border-radius: 16px;
+                    padding: 12px;
+                    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+                    z-index: 999;
+                    min-width: 180px;
+                    animation: slideDown 0.3s ease;
+                `;
+                
+                const menuItems = [
+                    { icon: '🏠', text: '首页', action: 'showHome()' },
+                    { icon: '🎯', text: '开始刷题', action: 'showQuiz()' },
+                    { icon: '📝', text: '上传出题', action: 'showGenerate()' },
+                    { icon: '📖', text: '错题本', action: 'showWrong()' },
+                    { icon: '⭐', text: '收藏夹', action: 'showFavorites()' },
+                    { icon: '📖', text: '每日英语', action: 'loadDailyEnglish()' }
+                ];
+                
+                mobileNav.innerHTML = menuItems.map(item => `
+                    <div onclick="${item.action}; toggleMobileMenu();" style="
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        padding: 12px 16px;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                        font-size: 15px;
+                        color: #374151;
+                    " onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='transparent'">
+                        <span>${item.icon}</span>
+                        <span>${item.text}</span>
+                    </div>
+                `).join('');
+                
+                document.body.appendChild(mobileNav);
+            } else {
+                if (mobileNav.style.display === 'none') {
+                    mobileNav.style.display = 'block';
+                    mobileNav.style.animation = 'slideDown 0.3s ease';
+                } else {
+                    mobileNav.style.display = 'none';
+                }
             }
         }
 
@@ -3336,6 +4274,7 @@
                     
                     if (data.success) {
                         showToast(`成功生成 ${data.count} 道题目！(PDF共${data.total_pages}页)`, 'success');
+                        checkEmptyState(); // 更新空状态显示
                         showHome();
                     } else {
                         showToast('生成失败: ' + (data.error || '未知错误'), 'error');
@@ -3367,6 +4306,7 @@
                     
                     if (data.success) {
                         showToast(`成功生成 ${data.count} 道题目！`, 'success');
+                        checkEmptyState(); // 更新空状态显示
                         showHome();
                     } else {
                         showToast('生成失败: ' + (data.error || '未知错误'), 'error');
@@ -4658,6 +5598,359 @@
                 }
             }
         });
+
+        // ========== 分类系统 ==========
+        let categoriesData = {};
+        let currentChartPeriod = 7;
+        let chartInstances = {};
+
+        // 加载分类数据
+        async function loadCategories() {
+            try {
+                const res = await fetch(`${API_BASE}/categories`);
+                categoriesData = await res.json();
+                renderCategorySelect();
+            } catch (e) {
+                console.error('加载分类失败:', e);
+            }
+        }
+
+        // 渲染分类下拉框
+        function renderCategorySelect() {
+            const select = document.getElementById('category-select');
+            select.innerHTML = '<option value="">📚 所有分类</option>';
+            
+            for (const [category, data] of Object.entries(categoriesData)) {
+                select.innerHTML += `<option value="${category}">${data.icon || '📚'} ${category}</option>`;
+            }
+        }
+
+        // 分类改变时更新章节下拉框
+        function onCategoryChange() {
+            const category = document.getElementById('category-select').value;
+            const chapterSelect = document.getElementById('chapter-select');
+            
+            chapterSelect.innerHTML = '<option value="">📖 所有章节</option>';
+            
+            if (category && categoriesData[category]) {
+                const chapters = categoriesData[category].chapters || [];
+                chapters.forEach(chapter => {
+                    chapterSelect.innerHTML += `<option value="${chapter}">📖 ${chapter}</option>`;
+                });
+            }
+            
+            loadQuiz();
+        }
+
+        // ========== 学习统计图表 ==========
+        async function showStatsChart() {
+            switchPage('stats-chart-page');
+            document.getElementById('backBtn').onclick = () => showHome();
+            await loadChartData(currentChartPeriod);
+        }
+
+        function showChartPeriod(days) {
+            currentChartPeriod = days;
+            
+            // 更新按钮状态
+            document.querySelectorAll('.chart-controls .filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            loadChartData(days);
+        }
+
+        async function loadChartData(days) {
+            try {
+                const res = await fetch(`${API_BASE}/stats/chart?days=${days}`);
+                const data = await res.json();
+                
+                renderDailyChart(data.daily);
+                renderAccuracyChart(data.accuracy);
+                renderCategoryChart(data.categoryBreakdown);
+            } catch (e) {
+                console.error('加载图表数据失败:', e);
+                showToast('加载图表失败', 'error');
+            }
+        }
+
+        // 渲染每日学习量柱状图
+        function renderDailyChart(dailyData) {
+            const ctx = document.getElementById('dailyChart').getContext('2d');
+            
+            if (chartInstances.daily) {
+                chartInstances.daily.destroy();
+            }
+            
+            const labels = dailyData.map(d => d.date.slice(5)); // 只显示月-日
+            const totals = dailyData.map(d => d.total);
+            const corrects = dailyData.map(d => d.correct);
+            const wrongs = dailyData.map(d => d.wrong);
+            
+            chartInstances.daily = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '正确',
+                            data: corrects,
+                            backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                            borderRadius: 4
+                        },
+                        {
+                            label: '错误',
+                            data: wrongs,
+                            backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 渲染正确率折线图
+        function renderAccuracyChart(accuracyData) {
+            const ctx = document.getElementById('accuracyChart').getContext('2d');
+            
+            if (chartInstances.accuracy) {
+                chartInstances.accuracy.destroy();
+            }
+            
+            const labels = accuracyData.map(d => d.date.slice(5));
+            const accuracies = accuracyData.map(d => d.accuracy);
+            
+            chartInstances.accuracy = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '正确率(%)',
+                        data: accuracies,
+                        borderColor: 'rgba(99, 102, 241, 1)',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgba(99, 102, 241, 1)',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 渲染分类饼图
+        function renderCategoryChart(categoryData) {
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            
+            if (chartInstances.category) {
+                chartInstances.category.destroy();
+            }
+            
+            const labels = categoryData.map(d => d.category);
+            const totals = categoryData.map(d => d.total);
+            const colors = [
+                'rgba(99, 102, 241, 0.8)',
+                'rgba(16, 185, 129, 0.8)',
+                'rgba(245, 158, 11, 0.8)',
+                'rgba(239, 68, 68, 0.8)',
+                'rgba(139, 92, 246, 0.8)',
+                'rgba(236, 72, 153, 0.8)'
+            ];
+            
+            chartInstances.category = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: totals,
+                        backgroundColor: colors,
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ========== 学习报告 ==========
+        async function showReport(period = 'week') {
+            switchPage('report-page');
+            document.getElementById('backBtn').onclick = () => showHome();
+            
+            // 更新按钮状态
+            document.querySelectorAll('.report-tabs .filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`report-${period}-btn`).classList.add('active');
+            
+            await loadReportData(period);
+        }
+
+        async function loadReportData(period) {
+            try {
+                const res = await fetch(`${API_BASE}/stats/report?period=${period}`);
+                const data = await res.json();
+                
+                // 更新概览数据
+                document.getElementById('report-total').textContent = data.totalAnswered;
+                document.getElementById('report-correct').textContent = data.totalCorrect;
+                document.getElementById('report-accuracy').textContent = data.accuracy + '%';
+                document.getElementById('report-weak').textContent = data.weakPoints.length;
+                
+                // 更新掌握程度数据
+                document.getElementById('mastery-new').textContent = data.masteryStats.new;
+                document.getElementById('mastery-learning').textContent = data.masteryStats.learning;
+                document.getElementById('mastery-review').textContent = data.masteryStats.review;
+                document.getElementById('mastery-mastered').textContent = data.masteryStats.mastered;
+                
+                // 渲染掌握程度图表
+                renderMasteryChart(data.masteryStats);
+                
+                // 渲染薄弱知识点
+                renderWeakPoints(data.weakPoints);
+            } catch (e) {
+                console.error('加载报告数据失败:', e);
+                showToast('加载报告失败', 'error');
+            }
+        }
+
+        // 渲染掌握程度图表
+        function renderMasteryChart(masteryStats) {
+            const ctx = document.getElementById('masteryChart').getContext('2d');
+            
+            if (chartInstances.mastery) {
+                chartInstances.mastery.destroy();
+            }
+            
+            chartInstances.mastery = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['新题', '学习中', '待复习', '已掌握'],
+                    datasets: [{
+                        label: '题目数量',
+                        data: [masteryStats.new, masteryStats.learning, masteryStats.review, masteryStats.mastered],
+                        backgroundColor: [
+                            'rgba(139, 92, 246, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(16, 185, 129, 0.8)'
+                        ],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 渲染薄弱知识点
+        function renderWeakPoints(weakPoints) {
+            const container = document.getElementById('weak-points-list');
+            
+            if (weakPoints.length === 0) {
+                container.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 20px;">暂无薄弱知识点，继续保持！🎉</p>';
+                return;
+            }
+            
+            container.innerHTML = weakPoints.map((point, idx) => `
+                <div class="weak-point-item" style="padding: 12px; border-bottom: 1px solid #e5e7eb; ${idx === weakPoints.length - 1 ? 'border-bottom: none;' : ''}">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                        <span style="font-weight: 500; color: #1f2937; flex: 1;">${point.question}</span>
+                        <span style="background: rgba(239, 68, 68, 0.1); color: #dc2626; padding: 2px 8px; border-radius: 10px; font-size: 12px; margin-left: 8px;">错${point.wrongCount}次</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 12px; color: #6b7280;">
+                            <span style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${point.category}</span>
+                            ${point.chapter ? `<span style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px; margin-left: 4px;">${point.chapter}</span>` : ''}
+                        </span>
+                        <span style="font-size: 12px; color: ${point.masteryLevel < 30 ? '#dc2626' : '#f59e0b'};">
+                            掌握度: ${point.masteryLevel}%
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 初始化时加载分类
+        loadCategories();
 
         // 初始化启动
         init();

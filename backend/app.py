@@ -11,6 +11,7 @@ import base64
 import io
 import hashlib
 import secrets
+import bcrypt
 from functools import wraps
 
 app = Flask(__name__)
@@ -24,12 +25,16 @@ WRONG_FILE = os.path.join(DATA_DIR, 'wrong.json')
 FAVORITES_FILE = os.path.join(DATA_DIR, 'favorites.json')
 MEMORY_FILE = os.path.join(DATA_DIR, 'memory.json')  # 记忆曲线数据
 STATS_FILE = os.path.join(DATA_DIR, 'stats.json')     # 统计数据
+CATEGORIES_FILE = os.path.join(DATA_DIR, 'categories.json')  # 分类数据
 
 # 同步相关配置
 USERS_FILE = os.path.join(DATA_DIR, 'users.json')           # 用户数据
 SYNC_META_FILE = os.path.join(DATA_DIR, 'sync_meta.json')   # 同步元数据
 SYNC_HISTORY_FILE = os.path.join(DATA_DIR, 'sync_history.json')  # 同步历史
-JWT_SECRET = os.environ.get('JWT_SECRET', 'your-secret-key-change-in-production')
+JWT_SECRET = os.environ.get('JWT_SECRET', '')
+if not JWT_SECRET:
+    JWT_SECRET = secrets.token_hex(32)  # 自动生成
+    print("警告: JWT_SECRET 未设置，已自动生成")
 TOKEN_EXPIRE_DAYS = 30
 
 # 确保目录存在
@@ -40,11 +45,15 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max
 
 # MiniMax API配置 - 请替换为你的API Key
-MINIMAX_API_KEY = "sk-cp-8TEdW3D4r4nlNcao1PGu_xOjb8hd8gZqYaSIDOs4xAJgKdIx9IbMnFvW70tbv-rqnqBfpeEjw4wDUKXBbFa8FrdaKqlW9GG4pWFXOv8q91Nac6xX55_4GHU"
+MINIMAX_API_KEY = os.environ.get('MINIMAX_API_KEY', '')
+if not MINIMAX_API_KEY:
+    print("警告: MINIMAX_API_KEY 未设置")
 MINIMAX_API_URL = "https://api.minimax.chat/v1/text/chatcompletion_pro_2"
 
 # Kimi2.5 API (支持PDF)
-KIMI_API_KEY = "sk-cp-8TEdW3D4r4nlNcao1PGu_xOjb8hd8gZqYaSIDOs4xAJgKdIx9IbMnFvW70tbv-rqnqBfpeEjw4wDUKXBbFa8FrdaKqlW9GG4pWFXOv8q91Nac6xX55_4GHU"
+KIMI_API_KEY = os.environ.get('KIMI_API_KEY', '')
+if not KIMI_API_KEY:
+    print("警告: KIMI_API_KEY 未设置")
 KIMI_API_URL = "https://api.moonshot.cn/v1/chat/completions"
 
 # ========== 记忆曲线相关函数 ==========
@@ -275,6 +284,47 @@ def generate_questions_with_kimi(content, count, source="PDF文档"):
 # 确保数据目录存在
 os.makedirs(DATA_DIR, exist_ok=True)
 
+# 默认分类数据
+DEFAULT_CATEGORIES = {
+    "考研政治": {
+        "icon": "📚",
+        "chapters": [
+            "马克思主义基本原理",
+            "毛泽东思想和中国特色社会主义理论体系概论",
+            "中国近现代史纲要",
+            "思想道德修养与法律基础",
+            "形势与政策"
+        ]
+    },
+    "考研英语": {
+        "icon": "🌍",
+        "chapters": [
+            "阅读理解",
+            "完形填空",
+            "翻译",
+            "写作",
+            "词汇与语法"
+        ]
+    },
+    "考研数学": {
+        "icon": "🔢",
+        "chapters": [
+            "高等数学",
+            "线性代数",
+            "概率论与数理统计"
+        ]
+    },
+    "专业课": {
+        "icon": "📖",
+        "chapters": [
+            "计算机基础",
+            "数据结构",
+            "操作系统",
+            "计算机网络"
+        ]
+    }
+}
+
 # 初始化数据文件
 def init_data_files():
     # 初始化全局数据文件
@@ -289,6 +339,11 @@ def init_data_files():
             else:
                 with open(f, 'w', encoding='utf-8') as fp:
                     json.dump([], fp, ensure_ascii=False)
+    
+    # 初始化分类数据
+    if not os.path.exists(CATEGORIES_FILE):
+        with open(CATEGORIES_FILE, 'w', encoding='utf-8') as fp:
+            json.dump(DEFAULT_CATEGORIES, fp, ensure_ascii=False)
     
     # 初始化用户数据文件
     if not os.path.exists(USERS_FILE):
@@ -501,13 +556,22 @@ def generate_from_pdf():
         if os.path.exists(filepath):
             os.remove(filepath)
 
-# API: 获取刷题题目（增强：错题优先权重）
+# API: 获取刷题题目（增强：错题优先权重 + 分类筛选）
 @app.route('/api/quiz', methods=['GET'])
 def get_quiz():
     count = int(request.args.get('count', 10))
+    category = request.args.get('category', '')  # 分类筛选
+    chapter = request.args.get('chapter', '')    # 章节筛选
+    
     wrong_list = load_json(WRONG_FILE)
     questions = load_json(QUESTIONS_FILE)
     memory_data = load_json(MEMORY_FILE)
+    
+    # 按分类筛选
+    if category:
+        questions = [q for q in questions if q.get('category', '') == category]
+    if chapter:
+        questions = [q for q in questions if q.get('chapter', '') == chapter]
     
     if len(questions) == 0:
         return jsonify([])
@@ -909,8 +973,12 @@ def save_users(users):
     save_json(USERS_FILE, users)
 
 def hash_password(password):
-    """密码哈希"""
-    return hashlib.sha256(password.encode()).hexdigest()
+    """密码哈希 - 使用bcrypt"""
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+
+def verify_password(password, hashed):
+    """验证密码 - 使用bcrypt"""
+    return bcrypt.checkpw(password.encode(), hashed.encode())
 
 def generate_token(user_id):
     """生成JWT令牌（简化版）"""
@@ -1022,7 +1090,7 @@ def login():
     users = load_users()
     user = next((u for u in users if u['username'] == username), None)
     
-    if not user or user['password'] != hash_password(password):
+    if not user or not verify_password(password, user['password']):
         return jsonify({'success': False, 'error': '用户名或密码错误'}), 401
     
     # 更新最后登录时间
@@ -2310,6 +2378,257 @@ def refresh_daily_article():
 
 # 初始化英语阅读数据文件
 init_english_data_files()
+
+
+# ==========================================
+# 题目分类系统
+# ==========================================
+
+# API: 获取所有分类
+@app.route('/api/categories', methods=['GET'])
+def get_categories():
+    """获取所有分类和章节"""
+    categories = load_json(CATEGORIES_FILE)
+    return jsonify(categories)
+
+# API: 添加/更新分类
+@app.route('/api/categories', methods=['POST'])
+def save_categories():
+    """保存分类数据"""
+    data = request.json
+    save_json(CATEGORIES_FILE, data)
+    return jsonify({'success': True, 'message': '分类已保存'})
+
+# API: 更新题目分类
+@app.route('/api/questions/category', methods=['POST'])
+def update_question_category():
+    """更新题目的分类信息"""
+    data = request.json
+    question_ids = data.get('questionIds', [])
+    category = data.get('category', '')
+    chapter = data.get('chapter', '')
+    
+    questions = load_json(QUESTIONS_FILE)
+    
+    for q in questions:
+        if q['id'] in question_ids:
+            q['category'] = category
+            q['chapter'] = chapter
+    
+    save_json(QUESTIONS_FILE, questions)
+    return jsonify({'success': True, 'message': '分类已更新'})
+
+# API: 批量设置题目分类
+@app.route('/api/questions/batch-category', methods=['POST'])
+def batch_update_category():
+    """批量设置题目的分类"""
+    data = request.json
+    question_ids = data.get('questionIds', [])
+    category = data.get('category', '')
+    chapter = data.get('chapter', '')
+    
+    questions = load_json(QUESTIONS_FILE)
+    
+    updated = 0
+    for q in questions:
+        if q['id'] in question_ids:
+            q['category'] = category
+            q['chapter'] = chapter
+            updated += 1
+    
+    save_json(QUESTIONS_FILE, questions)
+    return jsonify({'success': True, 'updated': updated})
+
+
+# ==========================================
+# 学习统计图表
+# ==========================================
+
+# API: 获取图表数据
+@app.route('/api/stats/chart', methods=['GET'])
+def get_chart_data():
+    """获取图表数据"""
+    days = int(request.args.get('days', 30))
+    stats = load_json(STATS_FILE)
+    questions = load_json(QUESTIONS_FILE)
+    memory_data = load_json(MEMORY_FILE)
+    
+    # 每日答题数据
+    daily = []
+    for i in range(days):
+        date = (datetime.now() - timedelta(days=days - 1 - i)).strftime('%Y-%m-%d')
+        daily_data = stats.get('daily', {}).get(date, {'total': 0, 'correct': 0, 'wrong': 0})
+        daily.append({
+            'date': date,
+            'total': daily_data.get('total', 0),
+            'correct': daily_data.get('correct', 0),
+            'wrong': daily_data.get('wrong', 0),
+            'accuracy': round(daily_data.get('correct', 0) / daily_data.get('total', 1) * 100, 1) if daily_data.get('total', 0) > 0 else 0
+        })
+    
+    # 正确率趋势
+    accuracy = []
+    for i in range(days):
+        date = (datetime.now() - timedelta(days=days - 1 - i)).strftime('%Y-%m-%d')
+        daily_data = stats.get('daily', {}).get(date, {'total': 0, 'correct': 0})
+        acc = round(daily_data.get('correct', 0) / daily_data.get('total', 1) * 100, 1) if daily_data.get('total', 0) > 0 else 0
+        accuracy.append({
+            'date': date,
+            'accuracy': acc
+        })
+    
+    # 分类正确率统计
+    category_stats = {}
+    for q in questions:
+        category = q.get('category', '未分类')
+        if category not in category_stats:
+            category_stats[category] = {'total': 0, 'correct': 0}
+        
+        q_id = q.get('id')
+        if q_id in memory_data:
+            record = memory_data[q_id]
+            category_stats[category]['total'] += record.get('totalReviews', 0)
+            category_stats[category]['correct'] += record.get('correctCount', 0)
+    
+    category_breakdown = []
+    for cat, data in category_stats.items():
+        acc = round(data['correct'] / data['total'] * 100, 1) if data['total'] > 0 else 0
+        category_breakdown.append({
+            'category': cat,
+            'total': data['total'],
+            'correct': data['correct'],
+            'accuracy': acc
+        })
+    
+    # 排序按正确率
+    category_breakdown.sort(key=lambda x: x['accuracy'])
+    
+    return jsonify({
+        'daily': daily,
+        'accuracy': accuracy,
+        'categoryBreakdown': category_breakdown
+    })
+
+# API: 获取本周/本月统计
+@app.route('/api/stats/report', methods=['GET'])
+def get_stats_report():
+    """获取学习报告"""
+    period = request.args.get('period', 'week')  # week or month
+    stats = load_json(STATS_FILE)
+    questions = load_json(QUESTIONS_FILE)
+    memory_data = load_json(MEMORY_FILE)
+    wrong_list = load_json(WRONG_FILE)
+    
+    if period == 'week':
+        days = 7
+    else:
+        days = 30
+    
+    # 本周/本月统计
+    total_answered = 0
+    total_correct = 0
+    total_wrong = 0
+    
+    for i in range(days):
+        date = (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d')
+        daily_data = stats.get('daily', {}).get(date, {'total': 0, 'correct': 0, 'wrong': 0})
+        total_answered += daily_data.get('total', 0)
+        total_correct += daily_data.get('correct', 0)
+        total_wrong += daily_data.get('wrong', 0)
+    
+    accuracy = round(total_correct / total_answered * 100, 1) if total_answered > 0 else 0
+    
+    # 薄弱知识点分析（错题多的题目）
+    weak_points = {}
+    for w in wrong_list:
+        q_id = w.get('questionId')
+        if q_id not in weak_points:
+            weak_points[q_id] = {'wrongCount': 0, 'question': ''}
+        weak_points[q_id]['wrongCount'] += 1
+    
+    # 获取题目内容
+    weak_list = []
+    for q_id, data in weak_points.items():
+        q = next((q for q in questions if q['id'] == q_id), None)
+        if q:
+            memory_record = memory_data.get(q_id, {})
+            weak_list.append({
+                'questionId': q_id,
+                'question': q.get('question', '')[:100] + '...' if len(q.get('question', '')) > 100 else q.get('question', ''),
+                'wrongCount': data['wrongCount'],
+                'masteryLevel': memory_record.get('masteryLevel', 0),
+                'category': q.get('category', '未分类'),
+                'chapter': q.get('chapter', '未分类')
+            })
+    
+    # 按错题次数排序
+    weak_list.sort(key=lambda x: x['wrongCount'], reverse=True)
+    weak_list = weak_list[:10]  # 取前10个
+    
+    # 知识点掌握情况
+    mastery_stats = {'new': 0, 'learning': 0, 'review': 0, 'mastered': 0}
+    for record in memory_data.values():
+        mastery = record.get('masteryLevel', 0)
+        if mastery == 0:
+            mastery_stats['new'] += 1
+        elif mastery < 50:
+            mastery_stats['learning'] += 1
+        elif mastery < 80:
+            mastery_stats['review'] += 1
+        else:
+            mastery_stats['mastered'] += 1
+    
+    return jsonify({
+        'period': period,
+        'totalAnswered': total_answered,
+        'totalCorrect': total_correct,
+        'totalWrong': total_wrong,
+        'accuracy': accuracy,
+        'weakPoints': weak_list,
+        'masteryStats': mastery_stats,
+        'totalQuestions': len(questions),
+        'totalWrongQuestions': len(wrong_list)
+    })
+
+# API: 获取分类统计
+@app.route('/api/stats/by-category', methods=['GET'])
+def get_stats_by_category():
+    """获取按分类的统计"""
+    questions = load_json(QUESTIONS_FILE)
+    memory_data = load_json(MEMORY_FILE)
+    
+    category_stats = {}
+    for q in questions:
+        category = q.get('category', '未分类')
+        chapter = q.get('chapter', '未分类')
+        
+        if category not in category_stats:
+            category_stats[category] = {'total': 0, 'questions': [], 'chapters': {}}
+        
+        category_stats[category]['total'] += 1
+        category_stats[category]['questions'].append(q['id'])
+        
+        if chapter not in category_stats[category]['chapters']:
+            category_stats[category]['chapters'][chapter] = {'total': 0, 'questions': []}
+        
+        category_stats[category]['chapters'][chapter]['total'] += 1
+        category_stats[category]['chapters'][chapter]['questions'].append(q['id'])
+    
+    # 添加记忆数据
+    for cat in category_stats:
+        total_correct = 0
+        total_reviews = 0
+        for q_id in category_stats[cat]['questions']:
+            if q_id in memory_data:
+                record = memory_data[q_id]
+                total_correct += record.get('correctCount', 0)
+                total_reviews += record.get('totalReviews', 0)
+        
+        category_stats[cat]['accuracy'] = round(total_correct / total_reviews * 100, 1) if total_reviews > 0 else 0
+        category_stats[cat]['correctCount'] = total_correct
+        category_stats[cat]['reviewCount'] = total_reviews
+    
+    return jsonify(category_stats)
 
 
 if __name__ == '__main__':
