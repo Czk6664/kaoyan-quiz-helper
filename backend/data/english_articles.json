@@ -1,0 +1,104 @@
+{
+  "template": {
+    "id": "template-id",
+    "title": "文章标题示例",
+    "content": [
+      "段落1内容...",
+      "段落2内容...",
+      "段落3内容..."
+    ],
+    "questions": [
+      {
+        "id": 1,
+        "question": "题目内容",
+        "options": {
+          "A": "选项A内容",
+          "B": "选项B内容",
+          "C": "选项C内容",
+          "D": "选项D内容"
+        },
+        "answer": "A",
+        "explanation": "这道题的解析说明..."
+      }
+    ],
+    "source": "来源名称",
+    "date": "2024-03-14",
+    "wordCount": 300,
+    "difficulty": "medium"
+  },
+  "2026-03-14": {
+    "id": "sample-article",
+    "title": "The Power of Reading",
+    "content": [
+      "Reading is one of the most important skills we can develop. It opens doors to knowledge, imagination, and personal growth. In today's fast-paced digital world, taking time to read has become more valuable than ever.",
+      "Studies show that regular reading improves vocabulary, enhances critical thinking, and reduces stress. Whether it's fiction or non-fiction, books allow us to experience different perspectives and understand the world better.",
+      "Many successful people credit reading as a key factor in their achievements. Bill Gates reads about 50 books a year, and Warren Buffett spends most of his day reading. This shows that continuous learning through reading is essential for success."
+    ],
+    "questions": [
+      {
+        "id": 1,
+        "question": "According to the passage, why has reading become more valuable today?",
+        "options": {
+          "A": "Because it's faster than watching videos",
+          "B": "Because we live in a fast-paced digital world",
+          "C": "Because books are cheaper now",
+          "D": "Because schools require more reading"
+        },
+        "answer": "B",
+        "explanation": "The passage mentions 'In today's fast-paced digital world, taking time to read has become more valuable than ever.'"
+      },
+      {
+        "id": 2,
+        "question": "What benefit of reading is NOT mentioned in the passage?",
+        "options": {
+          "A": "Improving vocabulary",
+          "B": "Reducing stress",
+          "C": "Making more money",
+          "D": "Enhancing critical thinking"
+        },
+        "answer": "C",
+        "explanation": "The passage mentions improving vocabulary, reducing stress, and enhancing critical thinking, but does not mention making more money."
+      },
+      {
+        "id": 3,
+        "question": "How many books does Bill Gates read per year according to the passage?",
+        "options": {
+          "A": "About 30 books",
+          "B": "About 40 books",
+          "C": "About 50 books",
+          "D": "About 60 books"
+        },
+        "answer": "C",
+        "explanation": "The passage states 'Bill Gates reads about 50 books a year.'"
+      },
+      {
+        "id": 4,
+        "question": "What does the passage suggest about successful people?",
+        "options": {
+          "A": "They don't have time to read",
+          "B": "They consider reading important for success",
+          "C": "They only read fiction books",
+          "D": "They read less than average people"
+        },
+        "answer": "B",
+        "explanation": "The passage says 'Many successful people credit reading as a key factor in their achievements.'"
+      },
+      {
+        "id": 5,
+        "question": "What is the main idea of the passage?",
+        "options": {
+          "A": "Reading is important for personal development and success",
+          "B": "Digital books are better than paper books",
+          "C": "Bill Gates is the best reader in the world",
+          "D": "Reading is becoming less popular"
+        },
+        "answer": "A",
+        "explanation": "The passage discusses the importance of reading for knowledge, personal growth, and success."
+      }
+    ],
+    "source": "示例文章",
+    "date": "2026-03-14",
+    "wordCount": 168,
+    "difficulty": "medium"
+  }
+}

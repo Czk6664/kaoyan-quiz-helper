@@ -1710,6 +1710,492 @@
             color: var(--danger);
             border-top: 1px solid #e5e7eb;
         }
+
+        /* ==================== 每日英语阅读样式 ==================== */
+        .english-header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 20px;
+            border-radius: var(--radius-xl);
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .english-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .english-source {
+            font-size: 13px;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .english-content {
+            background: var(--card-bg);
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-lg);
+            line-height: 2;
+            font-size: 17px;
+            color: #1f2937;
+        }
+
+        .english-paragraph {
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px dashed #e5e7eb;
+        }
+
+        .english-paragraph:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        /* 可点击单词样式 */
+        .clickable-word {
+            cursor: pointer;
+            border-bottom: 2px dashed #93c5fd;
+            padding: 0 2px;
+            border-radius: 2px;
+            transition: all 0.2s ease;
+            position: relative;
+            display: inline-block;
+        }
+
+        .clickable-word:hover {
+            background: rgba(59, 130, 246, 0.15);
+            border-bottom-color: #3b82f6;
+        }
+
+        .clickable-word.clicked {
+            background: rgba(59, 130, 246, 0.2);
+            border-bottom-color: #1d4ed8;
+        }
+
+        /* 单词释义卡片 */
+        .word-popup {
+            position: fixed;
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            z-index: 3000;
+            max-width: 320px;
+            min-width: 240px;
+            animation: wordPopupIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        @keyframes wordPopupIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .word-popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .word-popup-word {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e3a8a;
+        }
+
+        .word-popup-phonetic {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .word-popup-close {
+            background: #f3f4f6;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .word-popup-close:hover {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .word-popup-meaning {
+            font-size: 15px;
+            color: #1f2937;
+            line-height: 1.6;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: var(--radius-sm);
+            border-left: 3px solid #3b82f6;
+        }
+
+        .word-popup-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .word-popup-btn.added {
+            background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+            color: white;
+        }
+
+        .word-popup-btn:not(.added) {
+            background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+        .word-popup-btn:hover:not(.added) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+        }
+
+        .word-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 2999;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        /* 英语题目样式 */
+        .english-question-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .english-question-number {
+            font-size: 14px;
+            color: #3b82f6;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .english-question-text {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #1f2937;
+            margin-bottom: 16px;
+        }
+
+        .english-options {
+            display: grid;
+            gap: 12px;
+        }
+
+        .english-option {
+            display: flex;
+            align-items: flex-start;
+            padding: 14px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            background: white;
+        }
+
+        .english-option:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .english-option.selected {
+            border-color: #3b82f6;
+            background: #dbeafe;
+        }
+
+        .english-option.correct {
+            border-color: var(--success);
+            background: #d1fae5;
+        }
+
+        .english-option.wrong {
+            border-color: var(--danger);
+            background: #fee2e2;
+        }
+
+        .english-option-label {
+            min-width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #3b82f6;
+            color: white;
+            border-radius: 50%;
+            font-weight: 600;
+            font-size: 14px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .english-option.correct .english-option-label {
+            background: var(--success);
+        }
+
+        .english-option.wrong .english-option-label {
+            background: var(--danger);
+        }
+
+        .english-option-text {
+            font-size: 15px;
+            line-height: 1.5;
+            color: #374151;
+        }
+
+        /* 结果页面 */
+        .result-summary {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 24px;
+            border-radius: var(--radius-xl);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .result-score {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .result-label {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .result-detail {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 16px;
+        }
+
+        .result-stat {
+            text-align: center;
+        }
+
+        .result-stat-num {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .result-stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .result-explanation {
+            background: var(--card-bg);
+            border-radius: var(--radius-xl);
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .result-explanation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .result-question-num {
+            font-weight: 600;
+            color: #3b82f6;
+        }
+
+        .result-correct-badge {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .result-wrong-badge {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .result-question-text {
+            font-size: 15px;
+            color: #374151;
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+
+        .result-your-answer {
+            font-size: 14px;
+            color: #dc2626;
+            margin-bottom: 8px;
+        }
+
+        .result-correct-answer {
+            font-size: 14px;
+            color: #059669;
+            margin-bottom: 12px;
+        }
+
+        .result-explanation-text {
+            font-size: 14px;
+            color: #4b5563;
+            line-height: 1.6;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: var(--radius-sm);
+            border-left: 3px solid #3b82f6;
+        }
+
+        /* 单词本页面 */
+        .vocab-filter {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .vocab-filter-btn {
+            padding: 8px 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .vocab-filter-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .vocab-filter-btn.active {
+            background: white;
+            color: #3b82f6;
+            border-color: white;
+        }
+
+        .vocab-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .vocab-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .vocab-info {
+            flex: 1;
+        }
+
+        .vocab-word {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 4px;
+        }
+
+        .vocab-phonetic {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .vocab-meaning {
+            font-size: 14px;
+            color: #374151;
+            line-height: 1.5;
+        }
+
+        .vocab-source {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .vocab-delete-btn {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            padding: 8px 14px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            margin-left: 12px;
+        }
+
+        .vocab-delete-btn:hover {
+            background: #fecaca;
+            transform: scale(1.05);
+        }
+
+        /* 返回文章按钮 */
+        .review-article-btn {
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -1783,6 +2269,12 @@
             </button>
             <button class="btn btn-secondary" onclick="showGenerate()">
                 <span>📤</span> 上传出题
+            </button>
+            <button class="btn btn-primary" onclick="loadDailyEnglish()" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);">
+                <span>📖</span> 每日英语
+            </button>
+            <button class="btn btn-secondary" onclick="loadVocabulary()">
+                <span>📚</span> 单词本
             </button>
         </div>
         
@@ -1868,6 +2360,26 @@
         <div id="review-page" class="page">
             <h2 class="list-title">🔄 复习</h2>
             <div id="review-list"></div>
+        </div>
+        
+        <!-- 每日英语阅读页面 -->
+        <div id="english-page" class="page">
+            <div id="english-content"></div>
+        </div>
+        
+        <!-- 英语答题结果页面 -->
+        <div id="english-result-page" class="page">
+            <div id="english-result-content"></div>
+        </div>
+        
+        <!-- 单词本页面 -->
+        <div id="vocabulary-page" class="page">
+            <h2 class="list-title">📚 单词本</h2>
+            <div class="vocab-filter">
+                <button class="vocab-filter-btn active" onclick="sortVocabulary('time')">按时间</button>
+                <button class="vocab-filter-btn" onclick="sortVocabulary('alpha')">按字母</button>
+            </div>
+            <div id="vocabulary-list"></div>
         </div>
     </div>
 
@@ -1956,6 +2468,22 @@
     </div>
 
     <div class="toast" id="toast"></div>
+
+    <!-- 单词释义卡片 -->
+    <div class="word-popup-overlay hidden" id="wordPopupOverlay" onclick="closeWordPopup()"></div>
+    <div class="word-popup hidden" id="wordPopup">
+        <div class="word-popup-header">
+            <div>
+                <div class="word-popup-word" id="popupWord"></div>
+                <div class="word-popup-phonetic" id="popupPhonetic"></div>
+            </div>
+            <button class="word-popup-close" onclick="closeWordPopup()">×</button>
+        </div>
+        <div class="word-popup-meaning" id="popupMeaning"></div>
+        <button class="word-popup-btn" id="popupAddBtn" onclick="addToVocabulary()">
+            <span>⭐</span> 加入单词本
+        </button>
+    </div>
 
     <script>
         const API_BASE = 'http://localhost:5000/api';
@@ -2735,10 +3263,12 @@
         function showHome() {
             switchPage('home-page');
             updateStats();
+            document.getElementById('backBtn').onclick = () => showHome();
         }
         
         function showGenerate() {
             switchPage('generate-page');
+            document.getElementById('backBtn').onclick = () => showHome();
         }
         
         function showQuiz() {
@@ -2852,6 +3382,7 @@
 
         async function startQuiz() {
             switchPage('quiz-page');
+            document.getElementById('backBtn').onclick = () => showHome();
             isCollected = false;
             
             try {
@@ -3253,6 +3784,7 @@
 
         async function showWrong() {
             switchPage('wrong-page');
+            document.getElementById('backBtn').onclick = () => showHome();
             
             let questions = [];
             
@@ -3374,6 +3906,7 @@
 
         async function showFavorites() {
             switchPage('favorites-page');
+            document.getElementById('backBtn').onclick = () => showHome();
             
             let questions = [];
             
@@ -3462,6 +3995,7 @@
 
         async function showReview() {
             switchPage('review-page');
+            document.getElementById('backBtn').onclick = () => showHome();
             
             try {
                 if (isOnline && currentUser) {
@@ -3616,6 +4150,514 @@
                 renderReviewQuestion();
             }, isCorrect ? 2000 : 3000);
         }
+
+        // ==================== 每日英语阅读功能 ====================
+        let currentEnglishData = null;
+        let englishAnswers = {};
+        let currentSelectedWord = null;
+        let vocabularyData = [];
+        let currentVocabSort = 'time';
+
+        // 加载每日英语文章
+        async function loadDailyEnglish() {
+            switchPage('english-page');
+            document.getElementById('backBtn').onclick = () => showHome();
+            
+            document.getElementById('english-content').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            `;
+            
+            try {
+                const res = await fetch(`${API_BASE}/english/daily`);
+                currentEnglishData = await res.json();
+                renderEnglishPage();
+            } catch (e) {
+                console.error('加载英语文章失败:', e);
+                showToast('加载失败，使用示例数据', 'error');
+                // 使用示例数据
+                currentEnglishData = {
+                    id: 'demo-1',
+                    title: 'The Power of Reading',
+                    source: 'Scientific American',
+                    content: [
+                        "Reading regularly can significantly improve your cognitive abilities. Studies have shown that people who read frequently have better memory and concentration.",
+                        "Moreover, reading reduces stress levels by allowing the mind to escape into different worlds. It is a form of mental exercise that keeps the brain active and healthy."
+                    ],
+                    questions: [
+                        {
+                            id: 'q1',
+                            question: "According to the passage, what is one benefit of regular reading?",
+                            options: {
+                                A: "It improves physical strength",
+                                B: "It enhances cognitive abilities",
+                                C: "It reduces social interaction",
+                                D: "It increases screen time"
+                            },
+                            answer: "B",
+                            explanation: "The passage states that 'Reading regularly can significantly improve your cognitive abilities.'"
+                        },
+                        {
+                            id: 'q2',
+                            question: "How does reading affect stress levels?",
+                            options: {
+                                A: "It increases stress",
+                                B: "It has no effect on stress",
+                                C: "It reduces stress by allowing mental escape",
+                                D: "It only helps with physical stress"
+                            },
+                            answer: "C",
+                            explanation: "The text mentions that 'reading reduces stress levels by allowing the mind to escape into different worlds.'"
+                        },
+                        {
+                            id: 'q3',
+                            question: "Reading is described as what type of exercise?",
+                            options: {
+                                A: "Physical exercise",
+                                B: "Mental exercise",
+                                C: "Social exercise",
+                                D: "Visual exercise"
+                            },
+                            answer: "B",
+                            explanation: "The passage describes reading as 'a form of mental exercise that keeps the brain active and healthy.'"
+                        },
+                        {
+                            id: 'q4',
+                            question: "What aspect of brain function does reading help maintain?",
+                            options: {
+                                A: "Only memory",
+                                B: "Only concentration",
+                                C: "Both memory and concentration",
+                                D: "Neither memory nor concentration"
+                            },
+                            answer: "C",
+                            explanation: "The first paragraph mentions that people who read have 'better memory and concentration.'"
+                        }
+                    ]
+                };
+                renderEnglishPage();
+            }
+        }
+
+        // 渲染英语阅读页面
+        function renderEnglishPage() {
+            if (!currentEnglishData) return;
+            
+            const paragraphsHtml = currentEnglishData.content.map((para, idx) => {
+                // 将段落中的单词转换为可点击的
+                const processedPara = para.replace(/([a-zA-Z]+)/g, (word) => {
+                    // 过滤掉太短的词
+                    if (word.length < 3) return word;
+                    return `<span class="clickable-word" onclick="showWordMeaning('${word.toLowerCase()}', event)">${word}</span>`;
+                });
+                return `<p class="english-paragraph">${processedPara}</p>`;
+            }).join('');
+            
+            const questionsHtml = currentEnglishData.questions.map((q, idx) => `
+                <div class="english-question-card" data-question-id="${q.id}">
+                    <div class="english-question-number">
+                        <span>📝</span> 问题 ${idx + 1}
+                    </div>
+                    <div class="english-question-text">${q.question}</div>
+                    <div class="english-options">
+                        ${Object.entries(q.options).map(([key, value]) => `
+                            <div class="english-option" data-value="${key}" onclick="selectEnglishOption('${q.id}', '${key}', this)">
+                                <span class="english-option-label">${key}</span>
+                                <span class="english-option-text">${value}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('english-content').innerHTML = `
+                <div class="english-header">
+                    <div class="english-title">${currentEnglishData.title}</div>
+                    <div class="english-source">
+                        <span>📰</span>
+                        <span>来源：${currentEnglishData.source}</span>
+                    </div>
+                </div>
+                <div class="english-content">
+                    ${paragraphsHtml}
+                </div>
+                <div class="card">
+                    <h3 style="margin-bottom: 16px; color: #1f2937;">阅读理解</h3>
+                    ${questionsHtml}
+                    <button class="btn btn-primary" onclick="submitEnglishAnswers()" style="margin-top: 20px; margin-bottom: 0;">
+                        <span>✅</span> 提交答案
+                    </button>
+                </div>
+            `;
+        }
+
+        // 显示单词释义
+        async function showWordMeaning(word, event) {
+            event.stopPropagation();
+            
+            // 移除之前的高亮
+            document.querySelectorAll('.clickable-word.clicked').forEach(el => {
+                el.classList.remove('clicked');
+            });
+            
+            // 高亮当前单词
+            event.target.classList.add('clicked');
+            
+            currentSelectedWord = word;
+            
+            // 获取单词信息
+            let wordData;
+            try {
+                const res = await fetch(`${API_BASE}/english/word?word=${encodeURIComponent(word)}`);
+                wordData = await res.json();
+            } catch (e) {
+                // 使用模拟数据
+                wordData = {
+                    word: word,
+                    phonetic: `[${word.slice(0, 2)}${word.slice(-1)}]`,
+                    meaning: getMockMeaning(word)
+                };
+            }
+            
+            // 更新弹窗内容
+            document.getElementById('popupWord').textContent = wordData.word;
+            document.getElementById('popupPhonetic').textContent = wordData.phonetic || '';
+            document.getElementById('popupMeaning').textContent = wordData.meaning || '暂无释义';
+            
+            // 检查是否已在单词本中
+            const isInVocab = vocabularyData.some(v => v.word === word);
+            updatePopupButton(isInVocab);
+            
+            // 显示弹窗
+            const popup = document.getElementById('wordPopup');
+            const overlay = document.getElementById('wordPopupOverlay');
+            
+            popup.classList.remove('hidden');
+            overlay.classList.remove('hidden');
+            
+            // 定位弹窗
+            const rect = event.target.getBoundingClientRect();
+            let left = rect.left;
+            let top = rect.bottom + 10;
+            
+            // 确保不超出屏幕
+            const popupWidth = 320;
+            if (left + popupWidth > window.innerWidth) {
+                left = window.innerWidth - popupWidth - 20;
+            }
+            if (left < 10) left = 10;
+            
+            if (top + 200 > window.innerHeight) {
+                top = rect.top - 210;
+            }
+            
+            popup.style.left = left + 'px';
+            popup.style.top = top + 'px';
+        }
+
+        // 模拟释义
+        function getMockMeaning(word) {
+            const meanings = {
+                'reading': 'n. 阅读; 读物\nv. 阅读(read的现在分词)',
+                'power': 'n. 力量; 能力; 权力\nv. 提供动力',
+                'improve': 'v. 改善; 提高; 改进',
+                'cognitive': 'adj. 认知的; 认识的',
+                'ability': 'n. 能力; 才能',
+                'memory': 'n. 记忆; 记忆力; 回忆',
+                'concentration': 'n. 专注; 集中; 浓度',
+                'reduce': 'v. 减少; 降低; 缩小',
+                'stress': 'n. 压力; 紧张; 强调\nv. 强调; 使紧张',
+                'escape': 'v. 逃离; 逃避; 避免\nn. 逃避; 逃跑',
+                'different': 'adj. 不同的; 差异的; 各种的',
+                'exercise': 'n. 运动; 练习; 锻炼\nv. 锻炼; 行使; 运用',
+                'mental': 'adj. 精神的; 脑力的; 心理的',
+                'active': 'adj. 活跃的; 积极的; 主动的',
+                'healthy': 'adj. 健康的; 有益健康的; 健全的',
+                'significantly': 'adv. 显著地; 意味深长地; 重大地',
+                'frequently': 'adv. 频繁地; 经常地; 屡次地',
+                'allowing': 'v. 允许; 准许; 承认(allow的现在分词)',
+                'mind': 'n. 头脑; 精神; 智力\nv. 介意; 注意',
+                'worlds': 'n. 世界; 领域; 世人(world的复数)'
+            };
+            return meanings[word] || 'n. ' + word + '\nv. ' + word;
+        }
+
+        // 关闭单词弹窗
+        function closeWordPopup() {
+            document.getElementById('wordPopup').classList.add('hidden');
+            document.getElementById('wordPopupOverlay').classList.add('hidden');
+            document.querySelectorAll('.clickable-word.clicked').forEach(el => {
+                el.classList.remove('clicked');
+            });
+        }
+
+        // 更新弹窗按钮状态
+        function updatePopupButton(isAdded) {
+            const btn = document.getElementById('popupAddBtn');
+            if (isAdded) {
+                btn.classList.add('added');
+                btn.innerHTML = '<span>✅</span> 已加入单词本';
+            } else {
+                btn.classList.remove('added');
+                btn.innerHTML = '<span>⭐</span> 加入单词本';
+            }
+        }
+
+        // 添加到单词本
+        async function addToVocabulary() {
+            if (!currentSelectedWord || !currentEnglishData) return;
+            
+            const popupMeaning = document.getElementById('popupMeaning').textContent;
+            const popupPhonetic = document.getElementById('popupPhonetic').textContent;
+            
+            const vocabItem = {
+                word: currentSelectedWord,
+                phonetic: popupPhonetic,
+                meaning: popupMeaning,
+                source: currentEnglishData.title,
+                timestamp: Date.now()
+            };
+            
+            // 检查是否已存在
+            const existingIndex = vocabularyData.findIndex(v => v.word === currentSelectedWord);
+            if (existingIndex >= 0) {
+                showToast('该单词已在单词本中', 'error');
+                return;
+            }
+            
+            vocabularyData.push(vocabItem);
+            
+            // 同步到服务器
+            try {
+                await fetch(`${API_BASE}/english/vocabulary`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(vocabItem)
+                });
+            } catch (e) {
+                console.error('同步单词本失败:', e);
+            }
+            
+            updatePopupButton(true);
+            showToast('已加入单词本', 'success');
+        }
+
+        // 选择英语题目选项
+        function selectEnglishOption(questionId, option, element) {
+            englishAnswers[questionId] = option;
+            
+            // 更新UI
+            const questionCard = element.closest('.english-question-card');
+            questionCard.querySelectorAll('.english-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            element.classList.add('selected');
+        }
+
+        // 提交英语答案
+        async function submitEnglishAnswers() {
+            if (!currentEnglishData) return;
+            
+            // 检查是否全部作答
+            const totalQuestions = currentEnglishData.questions.length;
+            const answeredQuestions = Object.keys(englishAnswers).length;
+            
+            if (answeredQuestions < totalQuestions) {
+                showToast(`还有 ${totalQuestions - answeredQuestions} 题未作答`, 'error');
+                return;
+            }
+            
+            // 计算成绩
+            let correct = 0;
+            const results = currentEnglishData.questions.map(q => {
+                const userAnswer = englishAnswers[q.id];
+                const isCorrect = userAnswer === q.answer;
+                if (isCorrect) correct++;
+                return {
+                    questionId: q.id,
+                    question: q.question,
+                    userAnswer: userAnswer,
+                    correctAnswer: q.answer,
+                    isCorrect: isCorrect,
+                    explanation: q.explanation,
+                    options: q.options
+                };
+            });
+            
+            const score = Math.round((correct / totalQuestions) * 100);
+            
+            // 发送到服务器
+            try {
+                await fetch(`${API_BASE}/english/submit`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        articleId: currentEnglishData.id,
+                        answers: englishAnswers,
+                        score: score
+                    })
+                });
+            } catch (e) {
+                console.error('提交答案失败:', e);
+            }
+            
+            // 显示结果页面
+            showEnglishResult(score, correct, totalQuestions, results);
+        }
+
+        // 显示英语答题结果
+        function showEnglishResult(score, correct, total, results) {
+            switchPage('english-result-page');
+            document.getElementById('backBtn').onclick = () => showHome();
+            
+            const summaryHtml = `
+                <div class="result-summary">
+                    <div class="result-score">${score}分</div>
+                    <div class="result-label">答题完成</div>
+                    <div class="result-detail">
+                        <div class="result-stat">
+                            <div class="result-stat-num">${correct}</div>
+                            <div class="result-stat-label">正确</div>
+                        </div>
+                        <div class="result-stat">
+                            <div class="result-stat-num">${total - correct}</div>
+                            <div class="result-stat-label">错误</div>
+                        </div>
+                        <div class="result-stat">
+                            <div class="result-stat-num">${total}</div>
+                            <div class="result-stat-label">总数</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const explanationsHtml = results.map((r, idx) => `
+                <div class="result-explanation">
+                    <div class="result-explanation-header">
+                        <span class="result-question-num">问题 ${idx + 1}</span>
+                        ${r.isCorrect 
+                            ? '<span class="result-correct-badge">✓ 正确</span>' 
+                            : '<span class="result-wrong-badge">✗ 错误</span>'}
+                    </div>
+                    <div class="result-question-text">${r.question}</div>
+                    ${!r.isCorrect ? `<div class="result-your-answer">你的答案：${r.userAnswer}. ${r.options[r.userAnswer]}</div>` : ''}
+                    <div class="result-correct-answer">正确答案：${r.correctAnswer}. ${r.options[r.correctAnswer]}</div>
+                    <div class="result-explanation-text">
+                        <strong>解析：</strong>${r.explanation}
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('english-result-content').innerHTML = `
+                ${summaryHtml}
+                ${explanationsHtml}
+                <button class="btn btn-secondary review-article-btn" onclick="renderEnglishPage()">
+                    <span>📖</span> 回顾文章
+                </button>
+                <button class="btn btn-primary review-article-btn" onclick="showHome()">
+                    <span>🏠</span> 返回首页
+                </button>
+            `;
+        }
+
+        // 加载单词本
+        async function loadVocabulary() {
+            switchPage('vocabulary-page');
+            document.getElementById('backBtn').onclick = () => showHome();
+            
+            // 尝试从服务器加载
+            try {
+                const res = await fetch(`${API_BASE}/english/vocabulary`);
+                vocabularyData = await res.json();
+            } catch (e) {
+                console.error('加载单词本失败:', e);
+                // 使用本地数据
+            }
+            
+            renderVocabularyList();
+        }
+
+        // 渲染单词本列表
+        function renderVocabularyList() {
+            const listEl = document.getElementById('vocabulary-list');
+            
+            if (vocabularyData.length === 0) {
+                listEl.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📚</div>
+                        <div class="empty-state-text">单词本为空，阅读文章时点击单词添加</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // 排序
+            let sortedData = [...vocabularyData];
+            if (currentVocabSort === 'alpha') {
+                sortedData.sort((a, b) => a.word.localeCompare(b.word));
+            } else {
+                sortedData.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+            }
+            
+            const listHtml = sortedData.map(item => `
+                <div class="vocab-card">
+                    <div class="vocab-info">
+                        <div class="vocab-word">${item.word}</div>
+                        <div class="vocab-phonetic">${item.phonetic || ''}</div>
+                        <div class="vocab-meaning">${item.meaning}</div>
+                        <div class="vocab-source">
+                            <span>📖</span>
+                            <span>${item.source || '每日英语'}</span>
+                        </div>
+                    </div>
+                    <button class="vocab-delete-btn" onclick="deleteFromVocabulary('${item.word}')">
+                        🗑️ 删除
+                    </button>
+                </div>
+            `).join('');
+            
+            listEl.innerHTML = listHtml;
+        }
+
+        // 排序单词本
+        function sortVocabulary(sortType) {
+            currentVocabSort = sortType;
+            document.querySelectorAll('.vocab-filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            renderVocabularyList();
+        }
+
+        // 从单词本删除
+        async function deleteFromVocabulary(word) {
+            vocabularyData = vocabularyData.filter(v => v.word !== word);
+            
+            // 同步到服务器
+            try {
+                await fetch(`${API_BASE}/english/vocabulary?word=${encodeURIComponent(word)}`, {
+                    method: 'DELETE'
+                });
+            } catch (e) {
+                console.error('删除单词失败:', e);
+            }
+            
+            renderVocabularyList();
+            showToast('已删除', 'success');
+        }
+
+        // 点击空白处关闭弹窗
+        document.addEventListener('click', function(e) {
+            const popup = document.getElementById('wordPopup');
+            const overlay = document.getElementById('wordPopupOverlay');
+            if (!popup.classList.contains('hidden') && !popup.contains(e.target)) {
+                // 检查是否点击了单词
+                if (!e.target.classList.contains('clickable-word')) {
+                    closeWordPopup();
+                }
+            }
+        });
 
         // 初始化启动
         init();

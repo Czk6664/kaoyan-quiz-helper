@@ -1666,5 +1666,651 @@ def get_sync_history():
     })
 
 
+# ==========================================
+# 英语阅读模块 - 每日英语阅读
+# ==========================================
+
+# 英语阅读数据文件配置
+ENGLISH_ARTICLES_FILE = os.path.join(DATA_DIR, 'english_articles.json')
+ENGLISH_VOCABULARY_FILE = os.path.join(DATA_DIR, 'english_vocabulary.json')
+
+# 英语阅读相关文章主题库（用于AI生成）
+ENGLISH_TOPICS = [
+    "Technology and Innovation",
+    "Environmental Protection",
+    "Education and Learning",
+    "Health and Lifestyle",
+    "Travel and Culture",
+    "Science and Discovery",
+    "Business and Economy",
+    "Social Media and Communication",
+    "Art and Music",
+    "Sports and Fitness",
+    "History and Heritage",
+    "Future and Dreams",
+    "Family and Relationships",
+    "Work and Career",
+    "City Life vs Country Life"
+]
+
+def init_english_data_files():
+    """初始化英语阅读数据文件"""
+    if not os.path.exists(ENGLISH_ARTICLES_FILE):
+        save_json(ENGLISH_ARTICLES_FILE, {})
+    if not os.path.exists(ENGLISH_VOCABULARY_FILE):
+        save_json(ENGLISH_VOCABULARY_FILE, [])
+
+def generate_daily_article_with_ai():
+    """使用AI生成每日英语阅读文章"""
+    import random
+    
+    topic = random.choice(ENGLISH_TOPICS)
+    
+    prompt = f"""请生成一篇高考英语阅读理解难度的文章，主题：{topic}
+
+要求：
+1. 文章长度：250-350词
+2. 难度：高考英语阅读理解水平
+3. 包含5道阅读理解选择题（A、B、C、D四选一）
+4. 每道题要有详细的解析
+
+请按以下JSON格式返回：
+{{
+    "title": "文章标题",
+    "content": ["段落1", "段落2", "段落3"],
+    "questions": [
+        {{
+            "id": 1,
+            "question": "题目内容",
+            "options": {{"A": "选项A", "B": "选项B", "C": "选项C", "D": "选项D"}},
+            "answer": "A",
+            "explanation": "详细解析"
+        }}
+    ],
+    "source": "AI生成",
+    "wordCount": 300,
+    "difficulty": "medium"
+}}
+
+只返回JSON数据，不要有其他文字。"""
+
+    headers = {
+        "Authorization": f"Bearer {KIMI_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "model": "moonshot-v1-8k",
+        "messages": [
+            {"role": "user", "content": prompt}
+        ],
+        "temperature": 0.8
+    }
+    
+    try:
+        response = requests.post(KIMI_API_URL, headers=headers, json=payload, timeout=60)
+        result = response.json()
+        
+        text = result.get('choices', [{}])[0].get('message', {}).get('content', '')
+        
+        # 提取JSON
+        json_match = re.search(r'\{.*\}', text, re.DOTALL)
+        if json_match:
+            article = json.loads(json_match.group())
+            
+            # 添加元数据
+            article['id'] = str(uuid.uuid4())
+            article['date'] = datetime.now().strftime('%Y-%m-%d')
+            
+            # 计算词数
+            content_text = ' '.join(article.get('content', []))
+            article['wordCount'] = len(content_text.split())
+            
+            return article
+        
+        return None
+    except Exception as e:
+        print(f"生成文章失败: {e}")
+        return None
+
+def get_or_create_daily_article():
+    """获取或创建今日文章"""
+    init_english_data_files()
+    
+    today = datetime.now().strftime('%Y-%m-%d')
+    articles = load_json(ENGLISH_ARTICLES_FILE)
+    
+    # 检查今日文章是否已存在
+    if today in articles:
+        return articles[today]
+    
+    # 生成新文章
+    article = generate_daily_article_with_ai()
+    
+    if not article:
+        # 如果生成失败，使用示例文章
+        article = get_sample_article()
+    
+    # 保存文章
+    articles[today] = article
+    save_json(ENGLISH_ARTICLES_FILE, articles)
+    return article
+
+def get_sample_article():
+    """获取示例文章（备用）"""
+    return {
+        "id": "sample-article",
+        "title": "The Power of Reading",
+        "content": [
+            "Reading is one of the most important skills we can develop. It opens doors to knowledge, imagination, and personal growth. In today's fast-paced digital world, taking time to read has become more valuable than ever.",
+            "Studies show that regular reading improves vocabulary, enhances critical thinking, and reduces stress. Whether it's fiction or non-fiction, books allow us to experience different perspectives and understand the world better.",
+            "Many successful people credit reading as a key factor in their achievements. Bill Gates reads about 50 books a year, and Warren Buffett spends most of his day reading. This shows that continuous learning through reading is essential for success."
+        ],
+        "questions": [
+            {
+                "id": 1,
+                "question": "According to the passage, why has reading become more valuable today?",
+                "options": {
+                    "A": "Because it's faster than watching videos",
+                    "B": "Because we live in a fast-paced digital world",
+                    "C": "Because books are cheaper now",
+                    "D": "Because schools require more reading"
+                },
+                "answer": "B",
+                "explanation": "The passage mentions 'In today's fast-paced digital world, taking time to read has become more valuable than ever.'"
+            },
+            {
+                "id": 2,
+                "question": "What benefit of reading is NOT mentioned in the passage?",
+                "options": {
+                    "A": "Improving vocabulary",
+                    "B": "Reducing stress",
+                    "C": "Making more money",
+                    "D": "Enhancing critical thinking"
+                },
+                "answer": "C",
+                "explanation": "The passage mentions improving vocabulary, reducing stress, and enhancing critical thinking, but does not mention making more money."
+            },
+            {
+                "id": 3,
+                "question": "How many books does Bill Gates read per year according to the passage?",
+                "options": {
+                    "A": "About 30 books",
+                    "B": "About 40 books",
+                    "C": "About 50 books",
+                    "D": "About 60 books"
+                },
+                "answer": "C",
+                "explanation": "The passage states 'Bill Gates reads about 50 books a year.'"
+            },
+            {
+                "id": 4,
+                "question": "What does the passage suggest about successful people?",
+                "options": {
+                    "A": "They don't have time to read",
+                    "B": "They consider reading important for success",
+                    "C": "They only read fiction books",
+                    "D": "They read less than average people"
+                },
+                "answer": "B",
+                "explanation": "The passage says 'Many successful people credit reading as a key factor in their achievements.'"
+            },
+            {
+                "id": 5,
+                "question": "What is the main idea of the passage?",
+                "options": {
+                    "A": "Reading is important for personal development and success",
+                    "B": "Digital books are better than paper books",
+                    "C": "Bill Gates is the best reader in the world",
+                    "D": "Reading is becoming less popular"
+                },
+                "answer": "A",
+                "explanation": "The passage discusses the importance of reading for knowledge, personal growth, and success."
+            }
+        ],
+        "source": "示例文章",
+        "date": datetime.now().strftime('%Y-%m-%d'),
+        "wordCount": 168,
+        "difficulty": "medium"
+    }
+
+# API: 获取每日文章
+@app.route('/api/english/daily', methods=['GET'])
+def get_daily_article():
+    """获取今日英语阅读理解文章"""
+    try:
+        article = get_or_create_daily_article()
+        
+        # 返回时隐藏答案（只返回题目，不返回答案和解析）
+        response_article = {
+            "id": article.get("id"),
+            "title": article.get("title"),
+            "content": article.get("content"),
+            "questions": [
+                {
+                    "id": q["id"],
+                    "question": q["question"],
+                    "options": q["options"]
+                }
+                for q in article.get("questions", [])
+            ],
+            "source": article.get("source"),
+            "date": article.get("date"),
+            "wordCount": article.get("wordCount"),
+            "difficulty": article.get("difficulty")
+        }
+        
+        return jsonify({
+            "success": True,
+            "article": response_article
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+# API: 提交答案
+@app.route('/api/english/submit', methods=['POST'])
+def submit_english_answers():
+    """提交英语阅读答案"""
+    try:
+        data = request.json
+        article_id = data.get('articleId')
+        answers = data.get('answers', [])
+        
+        if not article_id or not answers:
+            return jsonify({
+                "success": False,
+                "error": "缺少必要参数"
+            }), 400
+        
+        # 获取文章
+        articles = load_json(ENGLISH_ARTICLES_FILE)
+        article = None
+        for date, art in articles.items():
+            if art.get('id') == article_id:
+                article = art
+                break
+        
+        if not article:
+            return jsonify({
+                "success": False,
+                "error": "文章不存在"
+            }), 404
+        
+        # 批改答案
+        questions = article.get('questions', [])
+        results = []
+        correct_count = 0
+        
+        for answer_item in answers:
+            question_id = answer_item.get('questionId')
+            user_answer = answer_item.get('answer', '').upper()
+            
+            # 查找对应题目
+            question = next((q for q in questions if q['id'] == question_id), None)
+            
+            if question:
+                correct_answer = question.get('answer', '').upper()
+                is_correct = user_answer == correct_answer
+                
+                if is_correct:
+                    correct_count += 1
+                
+                results.append({
+                    "questionId": question_id,
+                    "yourAnswer": user_answer,
+                    "correctAnswer": correct_answer,
+                    "isCorrect": is_correct,
+                    "explanation": question.get('explanation', '')
+                })
+        
+        total = len(answers)
+        score = round(correct_count / total * 100, 1) if total > 0 else 0
+        
+        return jsonify({
+            "success": True,
+            "results": results,
+            "score": score,
+            "correctCount": correct_count,
+            "totalCount": total
+        })
+        
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+# API: 查询单词
+@app.route('/api/english/word', methods=['GET'])
+def query_word():
+    """查询单词释义"""
+    word = request.args.get('word', '').strip().lower()
+    
+    if not word:
+        return jsonify({
+            "success": False,
+            "error": "请输入单词"
+        }), 400
+    
+    try:
+        # 使用免费词典API
+        url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
+        response = requests.get(url, timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            
+            # 解析API返回的数据
+            result = {
+                "word": word,
+                "phonetic": "",
+                "meanings": []
+            }
+            
+            if data and len(data) > 0:
+                entry = data[0]
+                
+                # 获取音标
+                phonetics = entry.get('phonetics', [])
+                for p in phonetics:
+                    if p.get('text'):
+                        result['phonetic'] = p.get('text')
+                        break
+                
+                # 获取释义
+                meanings = entry.get('meanings', [])
+                for m in meanings:
+                    part_of_speech = m.get('partOfSpeech', '')
+                    definitions = m.get('definitions', [])
+                    
+                    defs = []
+                    for d in definitions[:3]:  # 只取前3个释义
+                        defs.append({
+                            "definition": d.get('definition', ''),
+                            "example": d.get('example', '')
+                        })
+                    
+                    result['meanings'].append({
+                        "partOfSpeech": part_of_speech,
+                        "definitions": defs
+                    })
+            
+            return jsonify({
+                "success": True,
+                "data": result
+            })
+        else:
+            return jsonify({
+                "success": False,
+                "error": "未找到该单词"
+            }), 404
+            
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": f"查询失败: {str(e)}"
+        }), 500
+
+# API: 获取单词本
+@app.route('/api/english/vocabulary', methods=['GET'])
+def get_vocabulary():
+    """获取单词本"""
+    try:
+        init_english_data_files()
+        vocabulary = load_json(ENGLISH_VOCABULARY_FILE)
+        
+        # 按添加时间倒序排列
+        vocabulary.sort(key=lambda x: x.get('addedAt', ''), reverse=True)
+        
+        return jsonify({
+            "success": True,
+            "vocabulary": vocabulary,
+            "count": len(vocabulary)
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+# API: 添加单词到单词本
+@app.route('/api/english/vocabulary', methods=['POST'])
+def add_vocabulary():
+    """添加单词到单词本"""
+    try:
+        data = request.json
+        word = data.get('word', '').strip().lower()
+        meaning = data.get('meaning', '').strip()
+        phonetic = data.get('phonetic', '').strip()
+        article_id = data.get('articleId', '')
+        
+        if not word:
+            return jsonify({
+                "success": False,
+                "error": "单词不能为空"
+            }), 400
+        
+        init_english_data_files()
+        vocabulary = load_json(ENGLISH_VOCABULARY_FILE)
+        
+        # 检查是否已存在
+        existing = next((v for v in vocabulary if v['word'].lower() == word), None)
+        if existing:
+            return jsonify({
+                "success": False,
+                "error": "该单词已存在于单词本中"
+            }), 400
+        
+        # 如果没有提供释义，自动查询
+        if not meaning:
+            try:
+                url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
+                response = requests.get(url, timeout=10)
+                if response.status_code == 200:
+                    data = response.json()
+                    if data and len(data) > 0:
+                        entry = data[0]
+                        meanings_list = []
+                        for m in entry.get('meanings', []):
+                            pos = m.get('partOfSpeech', '')
+                            for d in m.get('definitions', [])[:1]:
+                                meanings_list.append(f"{pos}. {d.get('definition', '')}")
+                        meaning = '; '.join(meanings_list[:2])
+                        
+                        # 获取音标
+                        if not phonetic:
+                            for p in entry.get('phonetics', []):
+                                if p.get('text'):
+                                    phonetic = p.get('text')
+                                    break
+            except:
+                pass
+        
+        # 添加新单词
+        vocabulary.append({
+            "word": word,
+            "meaning": meaning or "暂无释义",
+            "phonetic": phonetic or "",
+            "articleId": article_id,
+            "addedAt": datetime.now().isoformat()
+        })
+        
+        save_json(ENGLISH_VOCABULARY_FILE, vocabulary)
+        
+        return jsonify({
+            "success": True,
+            "message": "添加成功",
+            "word": word
+        })
+        
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+# API: 从单词本删除单词
+@app.route('/api/english/vocabulary/<word>', methods=['DELETE'])
+def delete_vocabulary(word):
+    """从单词本删除单词"""
+    try:
+        word = word.strip().lower()
+        
+        if not word:
+            return jsonify({
+                "success": False,
+                "error": "单词不能为空"
+            }), 400
+        
+        init_english_data_files()
+        vocabulary = load_json(ENGLISH_VOCABULARY_FILE)
+        
+        # 查找并删除
+        original_count = len(vocabulary)
+        vocabulary = [v for v in vocabulary if v['word'].lower() != word]
+        
+        if len(vocabulary) == original_count:
+            return jsonify({
+                "success": False,
+                "error": "单词不存在"
+            }), 404
+        
+        save_json(ENGLISH_VOCABULARY_FILE, vocabulary)
+        
+        return jsonify({
+            "success": True,
+            "message": "删除成功",
+            "word": word
+        })
+        
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+# API: 获取历史文章列表
+@app.route('/api/english/articles', methods=['GET'])
+def get_english_articles():
+    """获取历史文章列表"""
+    try:
+        init_english_data_files()
+        articles = load_json(ENGLISH_ARTICLES_FILE)
+        
+        # 转换为列表并按日期倒序
+        article_list = []
+        for date, article in articles.items():
+            article_list.append({
+                "id": article.get("id"),
+                "title": article.get("title"),
+                "date": date,
+                "wordCount": article.get("wordCount"),
+                "difficulty": article.get("difficulty"),
+                "source": article.get("source")
+            })
+        
+        article_list.sort(key=lambda x: x.get('date', ''), reverse=True)
+        
+        return jsonify({
+            "success": True,
+            "articles": article_list
+        })
+        
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+# API: 获取指定日期的文章
+@app.route('/api/english/articles/<date>', methods=['GET'])
+def get_article_by_date(date):
+    """获取指定日期的文章"""
+    try:
+        init_english_data_files()
+        articles = load_json(ENGLISH_ARTICLES_FILE)
+        
+        if date not in articles:
+            return jsonify({
+                "success": False,
+                "error": "该日期没有文章"
+            }), 404
+        
+        article = articles[date]
+        
+        # 返回时隐藏答案
+        response_article = {
+            "id": article.get("id"),
+            "title": article.get("title"),
+            "content": article.get("content"),
+            "questions": [
+                {
+                    "id": q["id"],
+                    "question": q["question"],
+                    "options": q["options"]
+                }
+                for q in article.get("questions", [])
+            ],
+            "source": article.get("source"),
+            "date": article.get("date"),
+            "wordCount": article.get("wordCount"),
+            "difficulty": article.get("difficulty")
+        }
+        
+        return jsonify({
+            "success": True,
+            "article": response_article
+        })
+        
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+# API: 手动触发获取新文章（管理员功能）
+@app.route('/api/english/refresh', methods=['POST'])
+def refresh_daily_article():
+    """手动刷新今日文章"""
+    try:
+        # 强制生成新文章
+        article = generate_daily_article_with_ai()
+        
+        if article:
+            init_english_data_files()
+            articles = load_json(ENGLISH_ARTICLES_FILE)
+            
+            today = datetime.now().strftime('%Y-%m-%d')
+            articles[today] = article
+            save_json(ENGLISH_ARTICLES_FILE, articles)
+            
+            return jsonify({
+                "success": True,
+                "message": "文章已刷新",
+                "article": {
+                    "id": article.get("id"),
+                    "title": article.get("title"),
+                    "date": article.get("date")
+                }
+            })
+        else:
+            return jsonify({
+                "success": False,
+                "error": "生成文章失败"
+            }), 500
+            
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+# 初始化英语阅读数据文件
+init_english_data_files()
+
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
